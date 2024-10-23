@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<link href="/css/output.css" rel="stylesheet">
+    <link href="/css/styles.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+		<title>Admin - View Shirt Sizes</title>
+	</head>
+	<body>
+		<div class="container mx-auto p-6">
+			<h1 class="text-3xl font-bold mb-6 text-center">ข้อมูลไซซ์เสื้อ (แอดมิน)</h1>
+
+			<!-- Dropdown สำหรับเลือกแผนก -->
+			<div class="mb-4">
+				<label for="department" class="block text-lg font-semibold mb-2">เลือกแผนก:</label>
+				<select name="department" id="department" class="select select-bordered w-full">
+					<option value="all" <%= selectedDepartment === 'all' ? 'selected' : '' %>>ทั้งหมด</option>
+					<% departments.forEach(department => { %>
+						<option value="<%= department.id %>" <%= selectedDepartment === department.id.toString() ? 'selected' : '' %>><%= department.department_name %></option>
+					<% }) %>
+				</select>
+			</div>
+
+			<!-- ปุ่มดาวน์โหลดข้อมูล CSV -->
+			<div
+				class="mb-4 flex space-x-4">
+				<!-- ปุ่มดาวน์โหลดเฉพาะ Confirmed -->
+				<a href="/download-csv?department=<%= selectedDepartment %>&status=Confirmed" class="btn bg-orange-500 hover:bg-orange-600 text-white">
+					ดาวน์โหลดข้อมูลเป็น CSV
+				</a>
+
+				<!-- ปุ่มดาวน์โหลดรวม Draft -->
+				<a href="/download-csv?department=<%= selectedDepartment %>&status=all" class="btn bg-gray-500 hover:bg-gray-600 text-white">
+					ดาวน์โหลดข้อมูลเป็น CSV (รวม Draft)
+				</a>
+			</div>
+
+
+			<!-- ตารางแสดงข้อมูล -->
+			<div class="overflow-x-auto">
+				<table class="table table-zebra w-full">
+					<thead>
+						<tr>
+							<th>ชื่อ</th>
+							<th>นามสกุล</th>
+							<th>ไซซ์</th>
+							<th>แผนก</th>
+							<th>สถานะ</th>
+						</tr>
+					</thead>
+					<tbody>
+						<% sizes.forEach(size => { %>
+							<tr>
+								<td><%= size.first_name %></td>
+								<td><%= size.last_name %></td>
+								<td><%= size.size %></td>
+								<td><%= size.department_name %></td>
+								<td class="<%= size.status === 'Draft' ? 'text-orange-500 font-bold' : 'text-green-500 font-bold' %>">
+									<%= size.status %>
+								</td>
+							</tr>
+						<% }) %>
+					</tbody>
+				</table>
+			</div>
+		</div>
+
+		<script>
+			// เมื่อผู้ใช้เลือกแผนกใหม่ ให้ดึงข้อมูลโดยอัตโนมัติ
+			document.getElementById('department').addEventListener('change', function () {
+				const departmentId = this.value;
+				window.location.href = `/admin?department=${departmentId}`;
+			});
+		</script>
+    <%- include('partials/footer') %>
+	</body>
+</html>

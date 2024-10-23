@@ -1,0 +1,35 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import 'daisyui';
+
+.footer-left, .footer-right {
+    font-size: 16px;
+  }
+  
+  /* จัดการให้ Footer ติดขอบล่างหน้าจอและมีระยะห่างจากขอบข้าง */
+  footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    padding-left: 1rem;  /* ระยะห่างจากขอบซ้าย */
+    padding-right: 1rem; /* ระยะห่างจากขอบขวา */
+    box-sizing: border-box;
+  }
+  
+  /* จัดให้ Footer แสดงเป็นสองบรรทัดเมื่อหน้าจอเล็ก */
+  @media (max-width: 640px) {
+    .footer-right {
+      margin-top: 10px;
+    }
+  }
+
+  /* ตั้งฟอนต์ Sarabun ให้ใช้ทั่วทั้งเว็บ */
+body {
+    font-family: 'Sarabun', sans-serif;
+  }
+  
+  

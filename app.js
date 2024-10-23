@@ -1,0 +1,138 @@
+const express = require('express');
+const bodyParser = require('body-parser');
+const connection = require('./db/config');
+
+const app = express();
+app.set('view engine', 'ejs');
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(express.static('public'));
+
+// แสดงหน้า admin
+app.get('/admin', (req, res) => {
+    const selectedDepartment = req.query.department || 'all';
+
+    let query = `
+      SELECT u.first_name, u.last_name, s.size, s.status, d.department_name
+      FROM shirt_sizes s
+      JOIN users u ON s.user_id = u.id
+      JOIN departments d ON u.department_id = d.id
+    `;
+
+    const queryParams = [];
+
+    if (selectedDepartment !== 'all') {
+      query += ` WHERE u.department_id = ?`;
+      queryParams.push(selectedDepartment);
+    }
+
+    connection.query(query, queryParams, (err, results) => {
+      if (err) throw err;
+
+      connection.query('SELECT * FROM departments', (err, departments) => {
+        if (err) throw err;
+        res.render('admin', { sizes: results, departments, selectedDepartment });
+      });
+    });
+});
+
+// ดาวน์โหลด CSV
+app.get('/download-csv', (req, res) => {
+    const department = req.query.department || 'all';
+    const status = req.query.status || 'Confirmed';
+
+    let query = `
+      SELECT u.first_name, u.last_name, s.size, d.department_name
+      FROM shirt_sizes s
+      JOIN users u ON s.user_id = u.id
+      JOIN departments d ON u.department_id = d.id
+    `;
+
+    let conditions = [];
+    if (department !== 'all') {
+      conditions.push(`u.department_id = ${connection.escape(department)}`);
+    }
+    if (status !== 'all') {
+      conditions.push(`s.status = 'Confirmed'`);
+    }
+
+    if (conditions.length > 0) {
+      query += ` WHERE ` + conditions.join(' AND ');
+    }
+
+    connection.query(query, (err, results) => {
+      if (err) throw err;
+
+      let csvContent = '\uFEFF' + 'First Name,Last Name,Size,Department\n';
+      results.forEach(row => {
+        csvContent += `${row.first_name},${row.last_name},${row.size},${row.department_name}\n`;
+      });
+
+      const fileName = status === 'all' ? 'size-All-Including-Draft.csv' : `size-${department}.csv`;
+      res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+      res.setHeader('Content-Disposition', `attachment; filename=${fileName}`);
+      res.send(csvContent);
+    });
+});
+
+// แสดงหน้าเลือกแผนก
+app.get('/user', (req, res) => {
+    connection.query('SELECT * FROM departments', (err, departments) => {
+        if (err) throw err;
+        res.render('select_department', { departments });
+    });
+});
+
+// เมื่อเลือกแผนกแล้วไปยังหน้าบันทึกข้อมูล
+app.post('/start-recording', (req, res) => {
+    const departmentId = req.body.department;
+
+    // Query เพื่อดึงรายชื่อผู้ใช้ในแผนก และข้อมูลไซซ์เสื้อที่เคยบันทึก
+    const query = `
+      SELECT u.id AS user_id, u.first_name, u.last_name, s.size 
+      FROM users u
+      LEFT JOIN shirt_sizes s ON u.id = s.user_id
+      WHERE u.department_id = ?`;
+
+    connection.query(query, [departmentId], (err, users) => {
+        if (err) throw err;
+
+        // ส่งข้อมูลผู้ใช้พร้อมไซซ์เสื้อที่เคยบันทึกไปยังหน้า record_size.ejs
+        res.render('record_size', { users, departmentId });
+    });
+});
+
+// บันทึกข้อมูลไซซ์เสื้อ
+app.post('/save-sizes', (req, res) => {
+    const { userIds, sizes, status } = req.body; // รับ userIds และ sizes จากฟอร์ม
+
+    const queries = [];
+
+    // ใช้ loop เพื่อจับคู่ userId กับ size อย่างถูกต้อง
+    userIds.forEach((userId, index) => {
+        const size = sizes[index];
+
+        if (parseInt(userId, 10) > 0 && size !== "") {
+            queries.push(
+                new Promise((resolve, reject) => {
+                    const query = `
+                    INSERT INTO shirt_sizes (user_id, size, status)
+                    VALUES (?, ?, ?)
+                    ON DUPLICATE KEY UPDATE size = ?, status = ?`;
+                    connection.query(query, [userId, size, status, size, status], (err, result) => {
+                        if (err) reject(err);
+                        else resolve();
+                    });
+                })
+            );
+        }
+    });
+
+    Promise.all(queries)
+        .then(() => res.redirect('/user'))
+        .catch(err => res.status(500).send(err));
+});
+
+// เริ่ม server
+app.listen(3000, () => {
+    console.log('Server is running on port 3000');
+});

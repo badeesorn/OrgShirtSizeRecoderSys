@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- ลิงก์ฟอนต์ Sarabun -->
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="/css/output.css" rel="stylesheet">
+  <link href="/css/styles.css" rel="stylesheet">
+  <title>เลือกแผนก</title>
+  <style>
+    body {
+      font-family: 'Sarabun', sans-serif;
+    }
+  </style>
+</head>
+<body>
+  <div class="container mx-auto p-6 max-w-xl">
+    <h1 class="text-3xl font-bold mb-6 text-center">เลือกแผนก</h1>
+    
+    <form action="/start-recording" method="POST">
+      <div class="relative inline-block text-left w-full mb-4">
+        <div>
+          <button id="dropdownButton" type="button" class="inline-flex justify-between w-full rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 focus:ring-indigo-500">
+            <span id="dropdownSelectedText">เลือกแผนก</span> <!-- แสดงชื่อแผนกที่เลือก -->
+            <svg class="-mr-1 ml-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 011.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+            </svg>
+          </button>
+        </div>
+
+        <!-- ตัวเลือก dropdown -->
+        <div id="dropdownMenu" class="hidden origin-top-right absolute right-0 mt-2 w-full rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5">
+          <div class="py-1" role="menu" aria-orientation="vertical" aria-labelledby="dropdownButton">
+            <% departments.forEach(department => { %>
+              <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-orange-500 hover:text-white" role="menuitem" data-value="<%= department.id %>">
+                <%= department.department_name %>
+              </a>
+            <% }) %>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hidden input สำหรับเก็บค่าแผนกที่เลือก -->
+      <input type="hidden" name="department" id="selectedDepartment">
+
+      <div class="flex justify-center mt-6">
+        <!-- ปุ่มเริ่มบันทึกที่ปิดไว้ในตอนแรก -->
+        <button type="submit" class="btn w-full max-w-md bg-orange-500 hover:bg-orange-600 text-white" id="startRecordingButton" disabled>
+          เริ่มบันทึกข้อมูล
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    const dropdownButton = document.getElementById('dropdownButton');
+    const dropdownMenu = document.getElementById('dropdownMenu');
+    const dropdownLinks = dropdownMenu.querySelectorAll('a');
+    const selectedDepartment = document.getElementById('selectedDepartment');
+    const dropdownSelectedText = document.getElementById('dropdownSelectedText');
+    const startRecordingButton = document.getElementById('startRecordingButton');
+
+    // เปิด/ปิดเมนู dropdown
+    dropdownButton.addEventListener('click', () => {
+      dropdownMenu.classList.toggle('hidden');
+    });
+
+    // ตั้งค่าเมื่อมีการเลือกแผนก
+    dropdownLinks.forEach(link => {
+      link.addEventListener('click', (event) => {
+        event.preventDefault(); // ป้องกันการเปลี่ยนหน้า
+        const departmentName = link.textContent;
+        const departmentValue = link.getAttribute('data-value');
+        
+        // ตั้งค่าแผนกที่เลือก
+        dropdownSelectedText.textContent = departmentName;
+        selectedDepartment.value = departmentValue;
+        
+        // ปิด dropdown
+        dropdownMenu.classList.add('hidden');
+
+        // ปลดล็อคปุ่มเริ่มบันทึก
+        startRecordingButton.disabled = false;
+      });
+    });
+  </script>
+    <%- include('partials/footer') %>
+</body>
+</html>
