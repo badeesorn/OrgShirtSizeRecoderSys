@@ -11,11 +11,11 @@
 	</head>
 	<body>
 		<div class="container mx-auto p-6">
-			<h1 class="text-3xl font-bold mb-6 text-center">ข้อมูลไซซ์เสื้อ (แอดมิน)</h1>
+			<h1 class="text-3xl font-bold mb-6 text-center">รายการและสรุปไซซ์เสื้อ 65 ปี มจธ.</h1>
 
 			<!-- Dropdown สำหรับเลือกแผนก -->
 			<div class="mb-4">
-				<label for="department" class="block text-lg font-semibold mb-2">เลือกแผนก:</label>
+				<!-- <label for="department" class="block text-lg font-semibold mb-2">เลือกแผนก:</label> -->
 				<select name="department" id="department" class="select select-bordered w-full">
 					<option value="all" <%= selectedDepartment === 'all' ? 'selected' : '' %>>ทั้งหมด</option>
 					<% departments.forEach(department => { %>
@@ -66,6 +66,25 @@
 					</tbody>
 				</table>
 			</div>
+      <div class="mt-8">
+        <h2 class="text-2xl font-bold mb-4">สรุปจำนวนไซซ์เสื้อ</h2>
+        <table class="table table-zebra w-full">
+          <thead>
+            <tr>
+              <th>ไซซ์</th>
+              <th>จำนวน</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% sizeSummary.forEach(size => { %>
+              <tr>
+                <td><%= size.size %></td>
+                <td><%= size.count %></td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
 		</div>
 
 		<script>

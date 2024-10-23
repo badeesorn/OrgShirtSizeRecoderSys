@@ -9,31 +9,56 @@ app.use(express.static('public'));
 
 // แสดงหน้า admin
 app.get('/admin', (req, res) => {
-    const selectedDepartment = req.query.department || 'all';
+  const selectedDepartment = req.query.department || 'all';
 
-    let query = `
-      SELECT u.first_name, u.last_name, s.size, s.status, d.department_name
-      FROM shirt_sizes s
-      JOIN users u ON s.user_id = u.id
-      JOIN departments d ON u.department_id = d.id
-    `;
+  // Query หลักสำหรับดึงข้อมูลผู้ใช้และไซซ์เสื้อ
+  let query = `
+    SELECT u.first_name, u.last_name, s.size, s.status, d.department_name
+    FROM shirt_sizes s
+    JOIN users u ON s.user_id = u.id
+    JOIN departments d ON u.department_id = d.id
+  `;
 
-    const queryParams = [];
+  // Query สำหรับสรุปจำนวนเสื้อแต่ละไซซ์
+  let sizeSummaryQuery = `
+    SELECT s.size, COUNT(*) AS count
+    FROM shirt_sizes s
+    JOIN users u ON s.user_id = u.id
+  `;
 
-    if (selectedDepartment !== 'all') {
-      query += ` WHERE u.department_id = ?`;
-      queryParams.push(selectedDepartment);
-    }
+  const queryParams = [];
 
-    connection.query(query, queryParams, (err, results) => {
+  if (selectedDepartment !== 'all') {
+    query += ` WHERE u.department_id = ?`;
+    sizeSummaryQuery += ` WHERE u.department_id = ?`;
+    queryParams.push(selectedDepartment);
+  }
+
+  query += ` ORDER BY u.first_name ASC`;  // จัดเรียงข้อมูลตามชื่อ
+  sizeSummaryQuery += ` GROUP BY s.size ORDER BY s.size ASC`;  // สรุปจำนวนตามไซซ์
+
+  // Query หลักสำหรับดึงข้อมูลผู้ใช้
+  connection.query(query, queryParams, (err, results) => {
+    if (err) throw err;
+
+    // Query สำหรับสรุปจำนวนเสื้อแต่ละไซซ์
+    connection.query(sizeSummaryQuery, queryParams, (err, sizeSummaryResults) => {
       if (err) throw err;
 
+      // Query สำหรับดึงรายชื่อแผนกทั้งหมด
       connection.query('SELECT * FROM departments', (err, departments) => {
         if (err) throw err;
-        res.render('admin', { sizes: results, departments, selectedDepartment });
+        res.render('admin', { 
+          sizes: results,  // ข้อมูลผู้ใช้และไซซ์เสื้อ
+          sizeSummary: sizeSummaryResults,  // ข้อมูลสรุปจำนวนเสื้อแต่ละไซซ์
+          departments,  // ข้อมูลแผนกทั้งหมด
+          selectedDepartment  // แผนกที่เลือกอยู่ในขณะนี้
+        });
       });
     });
+  });
 });
+
 
 // ดาวน์โหลด CSV
 app.get('/download-csv', (req, res) => {
