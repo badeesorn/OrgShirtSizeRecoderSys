@@ -32,4 +32,8 @@ body {
     font-family: 'Sarabun', sans-serif;
   }
   
+
+.container {
+    padding-bottom: 100px; /* ปรับให้เหมาะสมกับขนาดของ footer */
+  }
   

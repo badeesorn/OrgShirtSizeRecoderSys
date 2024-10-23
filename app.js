@@ -103,34 +103,34 @@ app.post('/start-recording', (req, res) => {
 
 // บันทึกข้อมูลไซซ์เสื้อ
 app.post('/save-sizes', (req, res) => {
-    const { userIds, sizes, status } = req.body; // รับ userIds และ sizes จากฟอร์ม
+  const { userIds, sizes, status } = req.body;
 
-    const queries = [];
+  const queries = [];
 
-    // ใช้ loop เพื่อจับคู่ userId กับ size อย่างถูกต้อง
-    userIds.forEach((userId, index) => {
-        const size = sizes[index];
+  userIds.forEach((userId, index) => {
+      const size = sizes[index];
+      if (parseInt(userId, 10) > 0 && size !== "") {
+          queries.push(
+              new Promise((resolve, reject) => {
+                  const query = `
+                  INSERT INTO shirt_sizes (user_id, size, status)
+                  VALUES (?, ?, ?)
+                  ON DUPLICATE KEY UPDATE size = ?, status = ?`;
+                  connection.query(query, [userId, size, status, size, status], (err, result) => {
+                      if (err) reject(err);
+                      else resolve();
+                  });
+              })
+          );
+      }
+  });
 
-        if (parseInt(userId, 10) > 0 && size !== "") {
-            queries.push(
-                new Promise((resolve, reject) => {
-                    const query = `
-                    INSERT INTO shirt_sizes (user_id, size, status)
-                    VALUES (?, ?, ?)
-                    ON DUPLICATE KEY UPDATE size = ?, status = ?`;
-                    connection.query(query, [userId, size, status, size, status], (err, result) => {
-                        if (err) reject(err);
-                        else resolve();
-                    });
-                })
-            );
-        }
-    });
-
-    Promise.all(queries)
-        .then(() => res.redirect('/user'))
-        .catch(err => res.status(500).send(err));
+  Promise.all(queries)
+      .then(() => res.redirect('/user?saved=true'))  // ส่งผู้ใช้กลับไปที่หน้า user พร้อม query parameter
+      .catch(err => res.status(500).send(err));
 });
+
+
 
 // เริ่ม server
 app.listen(3000, () => {

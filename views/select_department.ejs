@@ -7,6 +7,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link href="/css/output.css" rel="stylesheet">
   <link href="/css/styles.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
   <title>เลือกแผนก</title>
   <style>
     body {
@@ -84,6 +86,26 @@
         startRecordingButton.disabled = false;
       });
     });
+  </script>
+  <script>
+    // ฟังก์ชันสำหรับการดึง query parameters
+    function getQueryParam(param) {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get(param);
+    }
+
+    // ตรวจสอบว่า query parameter 'saved' มีค่าหรือไม่
+    const isSaved = getQueryParam('saved');
+
+    if (isSaved === 'true') {
+      // ถ้ามีการบันทึกข้อมูลสำเร็จ ให้แสดง SweetAlert
+      Swal.fire({
+        title: 'Success!',
+        text: 'Your work has been saved',
+        icon: 'success',
+        confirmButtonText: 'OK'
+      });
+    }
   </script>
     <%- include('partials/footer') %>
 </body>
