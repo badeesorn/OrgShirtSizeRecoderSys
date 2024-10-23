@@ -1,6 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const connection = require('./db/config');
+require('dotenv').config();
 
 const app = express();
 app.set('view engine', 'ejs');
@@ -100,7 +101,7 @@ app.get('/download-csv', (req, res) => {
 });
 
 // แสดงหน้าเลือกแผนก
-app.get('/user', (req, res) => {
+app.get('/', (req, res) => {
     connection.query('SELECT * FROM departments', (err, departments) => {
         if (err) throw err;
         res.render('select_department', { departments });
@@ -151,13 +152,15 @@ app.post('/save-sizes', (req, res) => {
   });
 
   Promise.all(queries)
-      .then(() => res.redirect('/user?saved=true'))  // ส่งผู้ใช้กลับไปที่หน้า user พร้อม query parameter
+      .then(() => res.redirect('/?saved=true'))  // ส่งผู้ใช้กลับไปที่หน้า user พร้อม query parameter
       .catch(err => res.status(500).send(err));
 });
 
 
 
 // เริ่ม server
-app.listen(3000, () => {
-    console.log('Server is running on port 3000');
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
 });
