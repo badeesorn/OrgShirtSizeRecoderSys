@@ -1,77 +1,120 @@
 <!DOCTYPE html>
 <html lang="en">
-	<head>
-		<meta charset="UTF-8">
-		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<link href="/css/output.css" rel="stylesheet">
-		<link href="/css/styles.css" rel="stylesheet">
-		<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
-		<title>บันทึกไซซ์เสื้อ</title>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="/css/output.css" rel="stylesheet">
+  <link href="/css/styles.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> <!-- เพิ่ม SweetAlert2 -->
 
-	</head>
-	<body>
-		<div class="container mx-auto p-6">
-			<h1 class="text-3xl font-bold mb-6 text-center">ระบบบันทึกไซซ์เสื้อเนื่องในโอกาส 65 ปี มจธ.</h1>
+  <title>บันทึกไซซ์เสื้อ</title>
+</head>
+<body>
+    <div class="container mx-auto p-6">
+      <h1 class="text-3xl font-bold mb-6 text-center">ระบบบันทึกไซซ์เสื้อเนื่องในโอกาส 65 ปี มจธ.</h1>
+      
+        <!-- ปุ่ม "ขนาดเสื้อ" สำหรับแสดง pop up -->
+        <div class="text-center mb-4">
+          <button id="sizeGuideBtn" class="btn bg-orange-500 text-white">ขนาดเสื้อ</button>
+        </div>
+      
+        <!-- ฟอร์มสำหรับบันทึกไซซ์เสื้อ -->
+        <form action="/save-sizes" method="POST">
+          <div class="overflow-x-auto">
+            <table class="table table-zebra w-full">
+              <thead>
+                <tr>
+                  <th>ชื่อ</th>
+                  <th>นามสกุล</th>
+                  <th>เลือกไซซ์</th>
 
-			<!-- ฟอร์มสำหรับบันทึกไซซ์เสื้อ -->
-			<form action="/save-sizes" method="POST">
-				<div class="overflow-x-auto">
-					<table class="table table-zebra w-full">
-						<thead>
-							<tr>
-								<th class="sm:w-1/2 lg:w-1/4">ชื่อ</th>
-								<!-- ปรับขนาดให้รองรับทั้งโมบายและเดสก์ท็อป -->
+                  <!-- <th class="sm:w-1/2 lg:w-1/4">ชื่อ</th>
 								<th class="sm:w-1/2 lg:w-1/4">นามสกุล</th>
-								<!-- ปรับขนาดให้รองรับทั้งโมบายและเดสก์ท็อป -->
-								<th class="sm:w-full lg:w-1/3">เลือกไซซ์</th>
-								<!-- ลดขนาดคอลัมน์ของเลือกไซซ์สำหรับหน้าจอใหญ่ -->
-							</tr>
-						</thead>
-						<tbody>
-							<% users.forEach(user => { %>
-								<tr>
-									<td class="px-4 py-2"><%= user.first_name %></td>
-									<td class="px-4 py-2"><%= user.last_name %></td>
-									<td class="px-4 py-2">
-										<input type="hidden" name="userIds[]" value="<%= user.user_id %>">
-										<select
-											name="sizes[]" class="select select-bordered w-full sm:w-2/3 lg:w-1/2">
-											<!-- ปรับความกว้างของ dropdown -->
-											<option value="">-- เลือกไซซ์ --</option>
-											<option value="หญิง SS" <%= user.size === "หญิง SS" ? "selected" : "" %>>หญิง SS</option>
-											<option value="หญิง S" <%= user.size === "หญิง S" ? "selected" : "" %>>หญิง S</option>
-											<option value="หญิง M" <%= user.size === "หญิง M" ? "selected" : "" %>>หญิง M</option>
-											<option value="หญิง L" <%= user.size === "หญิง L" ? "selected" : "" %>>หญิง L</option>
-											<option value="หญิง XL" <%= user.size === "หญิง XL" ? "selected" : "" %>>หญิง XL</option>
-											<option value="หญิง XXL" <%= user.size === "หญิง XXL" ? "selected" : "" %>>หญิง XXL</option>
-											<option value="ชาย S" <%= user.size === "ชาย S" ? "selected" : "" %>>ชาย S</option>
-											<option value="ชาย M" <%= user.size === "ชาย M" ? "selected" : "" %>>ชาย M</option>
-											<option value="ชาย L" <%= user.size === "ชาย L" ? "selected" : "" %>>ชาย L</option>
-											<option value="ชาย XL" <%= user.size === "ชาย XL" ? "selected" : "" %>>ชาย XL</option>
-											<option value="ชาย XXL" <%= user.size === "ชาย XXL" ? "selected" : "" %>>ชาย XXL</option>
-											<option value="ชาย LLL" <%= user.size === "ชาย LLL" ? "selected" : "" %>>ชาย LLL</option>
-											<option value="ชาย 4XL" <%= user.size === "ชาย 4XL" ? "selected" : "" %>>ชาย 4XL</option>
-											<option value="พิเศษ" <%= user.size === "พิเศษ" ? "selected" : "" %>>พิเศษ</option>
-										</select>
-									</td>
-								</tr>
-							<% }) %>
-						</tbody>
-					</table>
-				</div>
+								<th class="sm:w-full lg:w-1/3">เลือกไซซ์</th> -->
+                </tr>
+              </thead>
+              <tbody>
+                <% users.forEach(user => { %>
+                  <tr>
+                    <td class="px-4 py-2"><%= user.first_name %></td>
+                    <td class="px-4 py-2"><%= user.last_name %></td>
+                    <td class="px-4 py-2">
+                      <input type="hidden" name="userIds[]" value="<%= user.user_id %>">
+                      <select name="sizes[]" class="select select-bordered w-full sm:w-2/3 lg:w-1/2">
+                        <option value="">-- เลือกไซซ์ --</option>
+                        <option value="หญิง SS" <%= user.size === "หญิง SS" ? "selected" : "" %>>หญิง SS</option>
+                        <option value="หญิง S" <%= user.size === "หญิง S" ? "selected" : "" %>>หญิง S</option>
+                        <option value="หญิง M" <%= user.size === "หญิง M" ? "selected" : "" %>>หญิง M</option>
+                        <option value="หญิง L" <%= user.size === "หญิง L" ? "selected" : "" %>>หญิง L</option>
+                        <option value="หญิง XL" <%= user.size === "หญิง XL" ? "selected" : "" %>>หญิง XL</option>
+                        <option value="หญิง XXL" <%= user.size === "หญิง XXL" ? "selected" : "" %>>หญิง XXL</option>
+                        <option value="ชาย S" <%= user.size === "ชาย S" ? "selected" : "" %>>ชาย S</option>
+                        <option value="ชาย M" <%= user.size === "ชาย M" ? "selected" : "" %>>ชาย M</option>
+                        <option value="ชาย L" <%= user.size === "ชาย L" ? "selected" : "" %>>ชาย L</option>
+                        <option value="ชาย XL" <%= user.size === "ชาย XL" ? "selected" : "" %>>ชาย XL</option>
+                        <option value="ชาย XXL" <%= user.size === "ชาย XXL" ? "selected" : "" %>>ชาย XXL</option>
+                        <option value="ชาย LLL" <%= user.size === "ชาย LLL" ? "selected" : "" %>>ชาย LLL</option>
+                        <option value="ชาย 4XL" <%= user.size === "ชาย 4XL" ? "selected" : "" %>>ชาย 4XL</option>
+                        <option value="พิเศษ" <%= user.size === "พิเศษ" ? "selected" : "" %>>พิเศษ</option>
+                      </select>
+                    </td>
+                  </tr>
+                <% }) %>
+              </tbody>
+            </table>
+          </div>
+      
+          <!-- ปุ่มบันทึก -->
+          <div class="flex flex-col sm:flex-row justify-center mt-6 space-y-4 sm:space-y-0 sm:space-x-4">
+            <button type="submit" name="status" value="Confirmed" class="btn w-full sm:max-w-xs bg-orange-500 hover:bg-orange-600 text-white">
+              บันทึกข้อมูล
+            </button>
+            <button type="submit" name="status" value="Draft" class="btn w-full sm:max-w-xs bg-gray-500 hover:bg-gray-600 text-white">
+              บันทึกแบบร่าง
+            </button>
+          </div>
+        </form>
+      </div>
 
-				<!-- ปุ่ม -->
-				<div class="flex flex-col sm:flex-row justify-center mt-6 space-y-4 sm:space-y-0 sm:space-x-4">
-					<button type="submit" name="status" value="Confirmed" class="btn w-full sm:max-w-xs bg-orange-500 hover:bg-orange-600 text-white">
-						บันทึกข้อมูล
-					</button>
-					<button type="submit" name="status" value="Draft" class="btn w-full sm:max-w-xs bg-gray-500 hover:bg-gray-600 text-white">
-						บันทึกแบบร่าง
-					</button>
-				</div>
-			</form>
-		</div>
-
-		<%- include('partials/footer') %>
-	</body>
+      <!-- SweetAlert2 Popup Script -->
+      <script>
+        document.getElementById('sizeGuideBtn').addEventListener('click', function() {
+          Swal.fire({
+            title: 'ขนาดเสื้อ',
+            html: `
+              <div style="text-align:left;">
+                <h2><b>ขนาดเสื้อผู้หญิง</b></h2>
+                <table border="1" cellspacing="0" cellpadding="5">
+                  <tr><th>ไซซ์</th><th>รอบอก x ความยาว</th><th>แบบ</th></tr>
+                  <tr><td>SS</td><td>34x24</td><td>เข้ารูป</td></tr>
+                  <tr><td>S</td><td>36x25</td><td>เข้ารูป</td></tr>
+                  <tr><td>M</td><td>38x26</td><td>เข้ารูป</td></tr>
+                  <tr><td>L</td><td>40x27</td><td>เข้ารูป</td></tr>
+                  <tr><td>XL</td><td>42x28</td><td>เข้ารูป</td></tr>
+                  <tr><td>XXL</td><td>44x29</td><td>เข้ารูป</td></tr>
+                </table>
+                <br>
+                <h2><b>ขนาดเสื้อผู้ชาย</b></h2>
+                <table border="1" cellspacing="0" cellpadding="5">
+                  <tr><th>ไซซ์</th><th>รอบอก x ความยาว</th><th>แบบ</th></tr>
+                  <tr><td>S</td><td>38x26</td><td>ทรงตรง</td></tr>
+                  <tr><td>M</td><td>40x27</td><td>ทรงตรง</td></tr>
+                  <tr><td>L</td><td>42x28</td><td>ทรงตรง</td></tr>
+                  <tr><td>XL</td><td>44x29</td><td>ทรงตรง</td></tr>
+                  <tr><td>XXL</td><td>46x30</td><td>ทรงตรง</td></tr>
+                  <tr><td>LLL</td><td>48x31</td><td>ทรงตรง</td></tr>
+                  <tr><td>4XL</td><td>50x31.5</td><td>ทรงตรง</td></tr>
+                  <tr><td>พิเศษ</td><td>52x32</td><td>ทรงตรง</td></tr>
+                </table>
+              </div>
+            `,
+            width: '600px',
+            padding: '20px',
+            confirmButtonText: 'ปิด'
+          });
+        });
+      </script>
+  <%- include('partials/footer') %>
+</body>
 </html>
