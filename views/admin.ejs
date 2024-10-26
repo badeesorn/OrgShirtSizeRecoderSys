@@ -1,99 +1,127 @@
 <!DOCTYPE html>
 <html lang="en">
-	<head>
-		<meta charset="UTF-8">
-		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<link href="/css/output.css" rel="stylesheet">
-    <link href="/css/styles.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="/css/output.css" rel="stylesheet">
+  <link href="/css/styles.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <title>Admin - View Shirt Sizes</title>
+</head>
+<body>
+  <div class="container mx-auto p-6">
+    <h1 class="text-3xl font-bold mb-6 text-center">รายการและสรุปไซซ์เสื้อเนื่องในโอกาสครบรอบ 65 ปี มจธ.</h1>
 
-		<title>Admin - View Shirt Sizes</title>
-	</head>
-	<body>
-		<div class="container mx-auto p-6">
-			<h1 class="text-3xl font-bold mb-6 text-center">รายการและสรุปไซซ์เสื้อเนื่อในโอกาสครบรอบ 65 ปี มจธ.</h1>
+	<div class="mb-4">
+		<!-- Dropdown สำหรับเลือกหน่วยงานใหญ่ -->
+		<select name="major_department" id="majorDepartment" class="select select-bordered w-full">
+		  <option value="all" <%= selectedMajorDepartment === 'all' ? 'selected' : '' %>>ทั้งหมด</option>
+		  <% majorDepartments.forEach(major => { %>
+			<option value="<%= major.id %>" <%= selectedMajorDepartment === major.id.toString() ? 'selected' : '' %>><%= major.major_department_name %></option>
+		  <% }) %>
+		</select>
+	  </div>
+	  
+	  <div class="mb-4">
+		<!-- Dropdown สำหรับเลือกหน่วยงานย่อย -->
+		<select name="sub_department" id="subDepartment" class="select select-bordered w-full" <%= selectedMajorDepartment === 'all' ? 'disabled' : '' %>>
+		  <option value="all" <%= selectedSubDepartment === 'all' ? 'selected' : '' %>>ทั้งหมด</option>
+		  <% subDepartments.forEach(sub => { %>
+			<% if (sub.major_department_id.toString() === selectedMajorDepartment.toString()) { %>
+			  <option value="<%= sub.id %>" <%= selectedSubDepartment === sub.id.toString() ? 'selected' : '' %>><%= sub.sub_department_name %></option>
+			<% } %>
+		  <% }) %>
+		</select>
+	  </div>
+	  
 
-			<!-- Dropdown สำหรับเลือกแผนก -->
-			<div class="mb-4">
-				<!-- <label for="department" class="block text-lg font-semibold mb-2">เลือกแผนก:</label> -->
-				<select name="department" id="department" class="select select-bordered w-full">
-					<option value="all" <%= selectedDepartment === 'all' ? 'selected' : '' %>>ทั้งหมด</option>
-					<% departments.forEach(department => { %>
-						<option value="<%= department.id %>" <%= selectedDepartment === department.id.toString() ? 'selected' : '' %>><%= department.department_name %></option>
-					<% }) %>
-				</select>
-			</div>
+    <!-- ปุ่มดาวน์โหลดข้อมูล CSV -->
+    <div class="mb-4 flex space-x-4">
+      <!-- ปุ่มดาวน์โหลดเฉพาะ Confirmed -->
+      <a href="/download-csv?sub_department=<%= selectedSubDepartment %>&status=Confirmed" class="btn bg-orange-500 hover:bg-orange-600 text-white">
+        ดาวน์โหลดข้อมูลเป็น CSV
+      </a>
 
-			<!-- ปุ่มดาวน์โหลดข้อมูล CSV -->
-			<div
-				class="mb-4 flex space-x-4">
-				<!-- ปุ่มดาวน์โหลดเฉพาะ Confirmed -->
-				<a href="/download-csv?department=<%= selectedDepartment %>&status=Confirmed" class="btn bg-orange-500 hover:bg-orange-600 text-white">
-					ดาวน์โหลดข้อมูลเป็น CSV
-				</a>
+      <!-- ปุ่มดาวน์โหลดรวม Draft -->
+      <a href="/download-csv?sub_department=<%= selectedSubDepartment %>&status=all" class="btn bg-gray-500 hover:bg-gray-600 text-white">
+        ดาวน์โหลดข้อมูลเป็น CSV (รวม Draft)
+      </a>
+    </div>
 
-				<!-- ปุ่มดาวน์โหลดรวม Draft -->
-				<a href="/download-csv?department=<%= selectedDepartment %>&status=all" class="btn bg-gray-500 hover:bg-gray-600 text-white">
-					ดาวน์โหลดข้อมูลเป็น CSV (รวม Draft)
-				</a>
-			</div>
-
-
-			<!-- ตารางแสดงข้อมูล -->
-			<div class="overflow-x-auto">
-				<table class="table table-zebra w-full">
-					<thead>
-						<tr>
-							<th>ชื่อ</th>
-							<th>นามสกุล</th>
-							<th>ไซซ์</th>
-							<th>แผนก</th>
-							<th>สถานะ</th>
-						</tr>
-					</thead>
-					<tbody>
-						<% sizes.forEach(size => { %>
-							<tr>
-								<td><%= size.first_name %></td>
-								<td><%= size.last_name %></td>
-								<td><%= size.size %></td>
-								<td><%= size.department_name %></td>
-								<td class="<%= size.status === 'Draft' ? 'text-orange-500 font-bold' : 'text-green-500 font-bold' %>">
-									<%= size.status %>
-								</td>
-							</tr>
-						<% }) %>
-					</tbody>
-				</table>
-			</div>
-      <div class="mt-8">
-        <h2 class="text-2xl font-bold mb-4">สรุปจำนวนไซซ์เสื้อ</h2>
-        <table class="table table-zebra w-full">
-          <thead>
+    <!-- ตารางแสดงข้อมูล -->
+    <div class="overflow-x-auto">
+      <table class="table table-zebra w-full">
+        <thead>
+          <tr>
+            <th>ชื่อ</th>
+            <th>นามสกุล</th>
+            <th>ไซซ์</th>
+            <th>หน่วยงานย่อย</th>
+            <th>สถานะ</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% sizes.forEach(size => { %>
             <tr>
-              <th>ไซซ์</th>
-              <th>จำนวน</th>
+              <td><%= size.first_name %></td>
+              <td><%= size.last_name %></td>
+              <td><%= size.size %></td>
+              <td><%= size.sub_department_name %></td>
+              <td class="<%= size.status === 'Draft' ? 'text-orange-500 font-bold' : 'text-green-500 font-bold' %>">
+                <%= size.status %>
+              </td>
             </tr>
-          </thead>
-          <tbody>
-            <% sizeSummary.forEach(size => { %>
-              <tr>
-                <td><%= size.size %></td>
-                <td><%= size.count %></td>
-              </tr>
-            <% }) %>
-          </tbody>
-        </table>
-      </div>
-		</div>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
 
-		<script>
-			// เมื่อผู้ใช้เลือกแผนกใหม่ ให้ดึงข้อมูลโดยอัตโนมัติ
-			document.getElementById('department').addEventListener('change', function () {
-				const departmentId = this.value;
-				window.location.href = `/admin?department=${departmentId}`;
-			});
-		</script>
-    <%- include('partials/footer') %>
-	</body>
+    <!-- ตารางสรุปจำนวนไซซ์เสื้อ -->
+    <div class="mt-8">
+      <h2 class="text-2xl font-bold mb-4">สรุปจำนวนไซซ์เสื้อ</h2>
+      <table class="table table-zebra w-full">
+        <thead>
+          <tr>
+            <th>ไซซ์</th>
+            <th>จำนวน</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% sizeSummary.forEach(size => { %>
+            <tr>
+              <td><%= size.size %></td>
+              <td><%= size.count %></td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+	// เมื่อผู้ใช้เลือกหน่วยงานใหญ่ใหม่ ให้ดึงข้อมูลหน่วยงานย่อยโดยอัตโนมัติ
+	document.getElementById('majorDepartment').addEventListener('change', function () {
+	  const majorDepartmentId = this.value;
+	  const subDepartmentDropdown = document.getElementById('subDepartment');
+  
+	  if (majorDepartmentId === 'all') {
+		subDepartmentDropdown.disabled = true;
+		subDepartmentDropdown.value = 'all';
+	  } else {
+		subDepartmentDropdown.disabled = false;
+	  }
+  
+	  // เปลี่ยน URL เพื่อให้แสดงข้อมูลตามหน่วยงานใหญ่ที่เลือก
+	  window.location.href = `/admin?major_department=${majorDepartmentId}&sub_department=${subDepartmentDropdown.value}`;
+	});
+  
+	// เมื่อผู้ใช้เลือกหน่วยงานย่อยใหม่ ให้ดึงข้อมูลโดยอัตโนมัติ
+	document.getElementById('subDepartment').addEventListener('change', function () {
+	  const majorDepartmentId = document.getElementById('majorDepartment').value;
+	  const subDepartmentId = this.value;
+	  window.location.href = `/admin?major_department=${majorDepartmentId}&sub_department=${subDepartmentId}`;
+	});
+  </script>  
+  <%- include('partials/footer') %>
+</body>
 </html>
