@@ -33,6 +33,12 @@
 				</select>
 			</div>
 
+			<div class="mb-4 flex items-center">
+				<label for="showAllUsers" class="mr-2">แสดงรายชื่อทั้งหมด:</label>
+				<input type="checkbox" id="showAllUsers" class="toggle toggle-primary" <%= showAllUsers ? 'checked' : '' %>>
+			</div>
+			  
+
 			<!-- ปุ่มดาวน์โหลดข้อมูล CSV -->
 			<!-- ปุ่มดาวน์โหลดเฉพาะที่บันทึกแล้ว -->
 			<a href="/download-csv?sub_department=<%= selectedSubDepartment %>&includeAllUsers=false" class="btn bg-orange-500 hover:bg-orange-600 text-white w-full sm:w-auto text-center">
@@ -122,7 +128,15 @@
 				const subDepartmentId = this.value;
 				window.location.href = `/admin?major_department=${majorDepartmentId}&sub_department=${subDepartmentId}`;
 			});
-		</script>
+
+			document.getElementById('showAllUsers').addEventListener('change', function () {
+			  const majorDepartmentId = document.getElementById('majorDepartment').value;
+			  const subDepartmentId = document.getElementById('subDepartment').value;
+			  const showAllUsers = this.checked;
+			  window.location.href = `/admin?major_department=${majorDepartmentId}&sub_department=${subDepartmentId}&showAllUsers=${showAllUsers}`;
+			});
+		  </script>
+		  
 		<%- include('partials/footer') %>
 	</body>
 </html>

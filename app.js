@@ -9,20 +9,39 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static('public'));
 
 // แสดงหน้า admin
-// แสดงหน้า admin
-// แสดงหน้า admin
 app.get('/admin', (req, res) => {
   const selectedMajorDepartment = req.query.major_department || 'all';
   const selectedSubDepartment = req.query.sub_department || 'all';
+  const showAllUsers = req.query.showAllUsers === 'true'; // รับพารามิเตอร์สำหรับแสดงข้อมูลทั้งหมดหรือไม่
 
   // Query หลักสำหรับดึงข้อมูลผู้ใช้และไซซ์เสื้อ
   let query = `
-    SELECT u.first_name, u.last_name, s.size, sd.sub_department_name, md.major_department_name
-    FROM shirt_sizes s
-    JOIN users u ON s.user_id = u.id
+    SELECT u.first_name, u.last_name, u.position, s.size, sd.sub_department_name, md.major_department_name
+    FROM users u
+    LEFT JOIN shirt_sizes s ON u.id = s.user_id
     JOIN sub_departments sd ON u.sub_department_id = sd.id
     JOIN major_departments md ON sd.major_department_id = md.id
   `;
+
+  const queryParams = [];
+
+  if (selectedMajorDepartment !== 'all') {
+    query += ` WHERE md.id = ?`;
+    queryParams.push(selectedMajorDepartment);
+  }
+
+  if (selectedSubDepartment !== 'all') {
+    query += selectedMajorDepartment !== 'all' ? ` AND` : ` WHERE`;
+    query += ` sd.id = ?`;
+    queryParams.push(selectedSubDepartment);
+  }
+
+  if (!showAllUsers) {
+    query += queryParams.length > 0 ? ` AND` : ` WHERE`;
+    query += ` s.size IS NOT NULL`;
+  }
+
+  query += ` ORDER BY u.first_name ASC`;  // จัดเรียงข้อมูลตามชื่อ
 
   // Query สำหรับสรุปจำนวนเสื้อแต่ละไซซ์
   let sizeSummaryQuery = `
@@ -33,21 +52,15 @@ app.get('/admin', (req, res) => {
     JOIN major_departments md ON sd.major_department_id = md.id
   `;
 
-  const queryParams = [];
-
   if (selectedMajorDepartment !== 'all') {
-    query += ` WHERE md.id = ?`;
     sizeSummaryQuery += ` WHERE md.id = ?`;
-    queryParams.push(selectedMajorDepartment);
   }
 
   if (selectedSubDepartment !== 'all') {
-    query += ` AND sd.id = ?`;
-    sizeSummaryQuery += ` AND sd.id = ?`;
-    queryParams.push(selectedSubDepartment);
+    sizeSummaryQuery += selectedMajorDepartment !== 'all' ? ` AND` : ` WHERE`;
+    sizeSummaryQuery += ` sd.id = ?`;
   }
 
-  query += ` ORDER BY u.first_name ASC`;  // จัดเรียงข้อมูลตามชื่อ
   sizeSummaryQuery += ` GROUP BY s.size ORDER BY s.size ASC`;  // สรุปจำนวนตามไซซ์
 
   // Query หลักสำหรับดึงข้อมูลผู้ใช้
@@ -72,13 +85,15 @@ app.get('/admin', (req, res) => {
             majorDepartments,  // ข้อมูลหน่วยงานใหญ่ทั้งหมด
             subDepartments,  // ข้อมูลหน่วยงานย่อยทั้งหมด
             selectedMajorDepartment,  // หน่วยงานใหญ่ที่เลือกอยู่ในขณะนี้
-            selectedSubDepartment  // หน่วยงานย่อยที่เลือกอยู่ในขณะนี้
+            selectedSubDepartment,  // หน่วยงานย่อยที่เลือกอยู่ในขณะนี้
+            showAllUsers  // สถานะการแสดงข้อมูลทั้งหมดหรือเฉพาะผู้ที่มีไซซ์เสื้อ
           });
         });
       });
     });
   });
 });
+
 
 
 // ดาวน์โหลด CSV
