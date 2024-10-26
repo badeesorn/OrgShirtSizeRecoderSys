@@ -22,25 +22,25 @@
     <h1 class="text-2xl font-bold mb-6 text-center"> โปรดเลือกหน่วยงานของท่าน </h1>
     
     <form action="/start-recording" method="POST">
-      <!-- เลือกหน่วยงานใหญ่ -->
+      <!-- เลือก สำนัก/คณะ/สถาบัน -->
       <div class="relative inline-block text-left w-full mb-4">
-        <label for="majorDepartment" class="block text-sm font-medium text-gray-700">เลือก สำนัก/คณะ/สถาบัน</label>
+        <label for="majorDepartment" class="block text-sm font-medium text-gray-700">เลือกสำนัก/คณะ/สถาบัน</label>
         <select id="majorDepartment" class="block w-full mt-1 rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-          <option value="">-- เลือก สำนัก/คณะ/สถาบัน --</option>
+          <option value="">-- เลือกสำนัก/คณะ/สถาบัน --</option>
           <% majorDepartments.forEach(major => { %>
             <option value="<%= major.id %>"><%= major.major_department_name %></option>
           <% }) %>
         </select>
       </div>
-
-      <!-- เลือกแผนกย่อย -->
+    
+      <!-- เลือกหน่วยงาน -->
       <div class="relative inline-block text-left w-full mb-4">
         <label for="subDepartment" class="block text-sm font-medium text-gray-700">เลือกหน่วยงาน</label>
         <select id="subDepartment" name="department" class="block w-full mt-1 rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" disabled>
           <option value="">-- เลือกหน่วยงาน --</option>
         </select>
       </div>
-
+    
       <div class="flex justify-center mt-6">
         <!-- ปุ่มเริ่มบันทึกที่ปิดไว้ในตอนแรก -->
         <button type="submit" class="btn w-full max-w-md bg-orange-500 hover:bg-orange-600 text-white" id="startRecordingButton" disabled>
@@ -48,6 +48,7 @@
         </button>
       </div>
     </form>
+    
   </div>
 
   <script>
