@@ -164,7 +164,6 @@ app.get('/', (req, res) => {
   });
 });
 
-// เมื่อเลือกหน่วยงานใหญ่และแผนกย่อย
 app.post('/start-recording', (req, res) => {
   const subDepartmentId = req.body.department;
 
@@ -178,10 +177,14 @@ app.post('/start-recording', (req, res) => {
   connection.query(query, [subDepartmentId], (err, users) => {
       if (err) throw err;
 
+      // ตรวจสอบว่ามีผู้ใช้ที่มีข้อมูลไซซ์เสื้อหรือไม่
+      const hasPreviousData = users.some(user => user.size);
+
       // ส่งข้อมูลผู้ใช้พร้อมไซซ์เสื้อที่เคยบันทึกไปยังหน้า record_size.ejs
-      res.render('record_size', { users, subDepartmentId });
+      res.render('record_size', { users, subDepartmentId, hasPreviousData });
   });
 });
+
 
 
 // บันทึกข้อมูลไซซ์เสื้อ

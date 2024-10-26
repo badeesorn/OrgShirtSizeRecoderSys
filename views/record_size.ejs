@@ -15,10 +15,16 @@
 		<div class="container mx-auto p-6">
 			<h1 class="text-3xl font-bold mb-6 text-center">ระบบบันทึกไซซ์เสื้อเนื่องในโอกาส 65 ปี มจธ.</h1>
 
-			<!-- ปุ่ม "ขนาดเสื้อ" สำหรับแสดง pop up -->
-			<div class="text-center mb-4">
-				<button id="sizeGuideBtn" class="btn bg-orange-500 text-white">ขนาดเสื้อ</button>
-			</div>
+			<% if (hasPreviousData) { %>
+				<!-- แถบแจ้งเตือน -->
+				<div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-4 rounded">
+					<p>พบการบันทึกข้อมูลก่อนหน้า เมื่อคุณบันทึกข้อมูลจะเป็นการอัปเดทข้อมูลจากข้อมูลที่เคยบันทึกไว้ก่อนหน้า</p>
+				</div>
+			<% } %>
+
+      <div class="text-center mb-4">
+        <button id="sizeGuideBtn" class="btn bg-orange-500 text-white">ดูไซซ์เสื้อ</button>
+      </div>
 
 			<!-- ฟอร์มสำหรับบันทึกไซซ์เสื้อ -->
 			<form action="/save-sizes" method="POST">
@@ -29,10 +35,6 @@
 								<th>ชื่อ</th>
 								<th>นามสกุล</th>
 								<th>เลือกไซซ์</th>
-
-								<!-- <th class="sm:w-1/2 lg:w-1/4">ชื่อ</th>
-																<th class="sm:w-1/2 lg:w-1/4">นามสกุล</th>
-																<th class="sm:w-full lg:w-1/3">เลือกไซซ์</th> -->
 							</tr>
 						</thead>
 						<tbody>
@@ -68,12 +70,13 @@
 
 				<!-- ปุ่มบันทึก -->
 				<div class="flex justify-center mt-6">
-					<button type="submit" class="btn w-full sm:max-w-xs bg-orange-500 hover:bg-orange-600 text-white">
+					<button type="submit" class="btn w-full sm:w-auto bg-orange-500 hover:bg-orange-600 text-white">
 						บันทึกข้อมูล
 					</button>
 				</div>
 			</form>
 		</div>
+
 
 		<!-- SweetAlert2 Popup Script -->
 		<script>
