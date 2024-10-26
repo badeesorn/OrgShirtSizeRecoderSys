@@ -10,13 +10,14 @@ app.use(express.static('public'));
 
 // แสดงหน้า admin
 // แสดงหน้า admin
+// แสดงหน้า admin
 app.get('/admin', (req, res) => {
   const selectedMajorDepartment = req.query.major_department || 'all';
   const selectedSubDepartment = req.query.sub_department || 'all';
 
   // Query หลักสำหรับดึงข้อมูลผู้ใช้และไซซ์เสื้อ
   let query = `
-    SELECT u.first_name, u.last_name, s.size, s.status, sd.sub_department_name
+    SELECT u.first_name, u.last_name, s.size, sd.sub_department_name, md.major_department_name
     FROM shirt_sizes s
     JOIN users u ON s.user_id = u.id
     JOIN sub_departments sd ON u.sub_department_id = sd.id
@@ -80,25 +81,28 @@ app.get('/admin', (req, res) => {
 });
 
 
-
+// ดาวน์โหลด CSV
 // ดาวน์โหลด CSV
 app.get('/download-csv', (req, res) => {
   const subDepartment = req.query.sub_department || 'all';
-  const status = req.query.status || 'Confirmed';
+  const includeAllUsers = req.query.includeAllUsers === 'true'; // flag สำหรับดาวน์โหลดรวมผู้ใช้ที่ยังไม่ได้บันทึกข้อมูลด้วย
 
   let query = `
-    SELECT u.first_name, u.last_name, s.size, d.sub_department_name
-    FROM shirt_sizes s
-    JOIN users u ON s.user_id = u.id
+    SELECT u.first_name, u.last_name, u.position, s.size, md.major_department_name, d.sub_department_name
+    FROM users u
+    LEFT JOIN shirt_sizes s ON u.id = s.user_id
     JOIN sub_departments d ON u.sub_department_id = d.id
+    JOIN major_departments md ON d.major_department_id = md.id
   `;
 
   let conditions = [];
   if (subDepartment !== 'all') {
     conditions.push(`u.sub_department_id = ${connection.escape(subDepartment)}`);
   }
-  if (status !== 'all') {
-    conditions.push(`s.status = 'Confirmed'`);
+
+  if (!includeAllUsers) {
+    // ดาวน์โหลดเฉพาะผู้ใช้ที่มีข้อมูลบันทึกแล้ว
+    conditions.push(`s.size IS NOT NULL`);
   }
 
   if (conditions.length > 0) {
@@ -108,17 +112,22 @@ app.get('/download-csv', (req, res) => {
   connection.query(query, (err, results) => {
     if (err) throw err;
 
-    let csvContent = '\uFEFF' + 'First Name,Last Name,Size,Sub Department\n';
+    let csvContent = '\uFEFF' + 'First Name,Last Name,Position,Size,Major Department,Sub Department\n';
     results.forEach(row => {
-      csvContent += `${row.first_name},${row.last_name},${row.size},${row.sub_department_name}\n`;
+      csvContent += `${row.first_name},${row.last_name},${row.position || ''},${row.size || ''},${row.major_department_name},${row.sub_department_name}\n`;
     });
 
-    const fileName = status === 'all' ? 'size-All-Including-Draft.csv' : `size-${subDepartment}.csv`;
+    const fileName = includeAllUsers
+      ? `size-All-Including-Unrecorded-${subDepartment}.csv`
+      : `size-${subDepartment}.csv`;
+
     res.setHeader('Content-Type', 'text/csv; charset=utf-8');
     res.setHeader('Content-Disposition', `attachment; filename=${fileName}`);
     res.send(csvContent);
   });
 });
+
+
 
 
 // แสดงหน้าเลือกแผนก
@@ -160,8 +169,9 @@ app.post('/start-recording', (req, res) => {
 
 
 // บันทึกข้อมูลไซซ์เสื้อ
+// บันทึกข้อมูลไซซ์เสื้อ
 app.post('/save-sizes', (req, res) => {
-  const { userIds, sizes, status } = req.body;
+  const { userIds, sizes } = req.body;
 
   const queries = [];
 
@@ -171,10 +181,10 @@ app.post('/save-sizes', (req, res) => {
           queries.push(
               new Promise((resolve, reject) => {
                   const query = `
-                  INSERT INTO shirt_sizes (user_id, size, status)
-                  VALUES (?, ?, ?)
-                  ON DUPLICATE KEY UPDATE size = ?, status = ?`;
-                  connection.query(query, [userId, size, status, size, status], (err, result) => {
+                  INSERT INTO shirt_sizes (user_id, size)
+                  VALUES (?, ?)
+                  ON DUPLICATE KEY UPDATE size = ?`;
+                  connection.query(query, [userId, size, size], (err, result) => {
                       if (err) reject(err);
                       else resolve();
                   });
@@ -187,6 +197,7 @@ app.post('/save-sizes', (req, res) => {
       .then(() => res.redirect('/?saved=true'))  // ส่งผู้ใช้กลับไปที่หน้า user พร้อม query parameter
       .catch(err => res.status(500).send(err));
 });
+
 
 // API เพื่อดึงแผนกย่อยตามหน่วยงานใหญ่
 app.get('/api/sub-departments', (req, res) => {
