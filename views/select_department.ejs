@@ -9,7 +9,7 @@
   <link href="/css/styles.css" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
-  <title>เลือกแผนก</title>
+  <title>เลือกหน่วยงาน</title>
   <style>
     body {
       font-family: 'Sarabun', sans-serif;
@@ -24,9 +24,9 @@
     <form action="/start-recording" method="POST">
       <!-- เลือกหน่วยงานใหญ่ -->
       <div class="relative inline-block text-left w-full mb-4">
-        <label for="majorDepartment" class="block text-sm font-medium text-gray-700">เลือกหน่วยงานใหญ่</label>
+        <label for="majorDepartment" class="block text-sm font-medium text-gray-700">เลือก สำนัก/คณะ/สถาบัน</label>
         <select id="majorDepartment" class="block w-full mt-1 rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-          <option value="">-- เลือกหน่วยงานใหญ่ --</option>
+          <option value="">-- เลือก สำนัก/คณะ/สถาบัน --</option>
           <% majorDepartments.forEach(major => { %>
             <option value="<%= major.id %>"><%= major.major_department_name %></option>
           <% }) %>
@@ -35,9 +35,9 @@
 
       <!-- เลือกแผนกย่อย -->
       <div class="relative inline-block text-left w-full mb-4">
-        <label for="subDepartment" class="block text-sm font-medium text-gray-700">เลือกแผนกย่อย</label>
+        <label for="subDepartment" class="block text-sm font-medium text-gray-700">เลือกหน่วยงาน</label>
         <select id="subDepartment" name="department" class="block w-full mt-1 rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" disabled>
-          <option value="">-- เลือกแผนกย่อย --</option>
+          <option value="">-- เลือกหน่วยงาน --</option>
         </select>
       </div>
 
@@ -63,7 +63,7 @@
           .then(response => response.json())
           .then(data => {
             // เคลียร์แผนกย่อยที่เลือกไว้ก่อนหน้า
-            subDepartmentSelect.innerHTML = '<option value="">-- เลือกแผนกย่อย --</option>';
+            subDepartmentSelect.innerHTML = '<option value="">-- เลือกหน่วยงาน --</option>';
             // เพิ่มตัวเลือกแผนกย่อยที่ดึงมาจากฐานข้อมูล
             data.subDepartments.forEach(sub => {
               const option = document.createElement('option');

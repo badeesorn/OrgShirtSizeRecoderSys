@@ -12,7 +12,8 @@ app.use(express.static('public'));
 app.get('/admin', (req, res) => {
   const selectedMajorDepartment = req.query.major_department || 'all';
   const selectedSubDepartment = req.query.sub_department || 'all';
-  const showAllUsers = req.query.showAllUsers === 'true'; // รับพารามิเตอร์สำหรับแสดงข้อมูลทั้งหมดหรือไม่
+  const showAllUsers = req.query.showAllUsers === 'true';
+  const searchName = req.query.search || '';
 
   // Query หลักสำหรับดึงข้อมูลผู้ใช้และไซซ์เสื้อ
   let query = `
@@ -31,7 +32,7 @@ app.get('/admin', (req, res) => {
   }
 
   if (selectedSubDepartment !== 'all') {
-    query += selectedMajorDepartment !== 'all' ? ` AND` : ` WHERE`;
+    query += queryParams.length > 0 ? ` AND` : ` WHERE`;
     query += ` sd.id = ?`;
     queryParams.push(selectedSubDepartment);
   }
@@ -39,6 +40,12 @@ app.get('/admin', (req, res) => {
   if (!showAllUsers) {
     query += queryParams.length > 0 ? ` AND` : ` WHERE`;
     query += ` s.size IS NOT NULL`;
+  }
+
+  if (searchName) {
+    query += queryParams.length > 0 ? ` AND` : ` WHERE`;
+    query += ` (u.first_name LIKE ? OR u.last_name LIKE ?)`;
+    queryParams.push(`%${searchName}%`, `%${searchName}%`);
   }
 
   query += ` ORDER BY u.first_name ASC`;  // จัดเรียงข้อมูลตามชื่อ
@@ -86,7 +93,8 @@ app.get('/admin', (req, res) => {
             subDepartments,  // ข้อมูลหน่วยงานย่อยทั้งหมด
             selectedMajorDepartment,  // หน่วยงานใหญ่ที่เลือกอยู่ในขณะนี้
             selectedSubDepartment,  // หน่วยงานย่อยที่เลือกอยู่ในขณะนี้
-            showAllUsers  // สถานะการแสดงข้อมูลทั้งหมดหรือเฉพาะผู้ที่มีไซซ์เสื้อ
+            showAllUsers,  // สถานะการแสดงข้อมูลทั้งหมดหรือเฉพาะผู้ที่มีไซซ์เสื้อ
+            searchName  // คำค้นหาชื่อหรือนามสกุลผู้ใช้
           });
         });
       });
@@ -94,9 +102,6 @@ app.get('/admin', (req, res) => {
   });
 });
 
-
-
-// ดาวน์โหลด CSV
 // ดาวน์โหลด CSV
 app.get('/download-csv', (req, res) => {
   const subDepartment = req.query.sub_department || 'all';
@@ -143,8 +148,6 @@ app.get('/download-csv', (req, res) => {
 });
 
 
-
-
 // แสดงหน้าเลือกแผนก
 app.get('/', (req, res) => {
   // Query เพื่อดึงหน่วยงานใหญ่ทั้งหมด
@@ -161,8 +164,6 @@ app.get('/', (req, res) => {
   });
 });
 
-
-// เมื่อเลือกแผนกแล้วไปยังหน้าบันทึกข้อมูล
 // เมื่อเลือกหน่วยงานใหญ่และแผนกย่อย
 app.post('/start-recording', (req, res) => {
   const subDepartmentId = req.body.department;
@@ -183,7 +184,6 @@ app.post('/start-recording', (req, res) => {
 });
 
 
-// บันทึกข้อมูลไซซ์เสื้อ
 // บันทึกข้อมูลไซซ์เสื้อ
 app.post('/save-sizes', (req, res) => {
   const { userIds, sizes } = req.body;
