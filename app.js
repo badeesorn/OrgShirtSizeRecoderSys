@@ -7,6 +7,7 @@ const app = express();
 app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static('public'));
+app.use(bodyParser.json());
 
 // แสดงหน้า admin
 app.get('/admin', (req, res) => {
@@ -14,6 +15,8 @@ app.get('/admin', (req, res) => {
   const selectedSubDepartment = req.query.sub_department || 'all';
   const showAllUsers = req.query.showAllUsers === 'true';
   const searchName = req.query.search || '';
+  const page = parseInt(req.query.page) || 1; // หน้าที่ต้องการแสดงผล
+  const pageSize = 10; // จำนวนรายการต่อหน้า
 
   // Query หลักสำหรับดึงข้อมูลผู้ใช้และไซซ์เสื้อ
   let query = `
@@ -48,53 +51,63 @@ app.get('/admin', (req, res) => {
     queryParams.push(`%${searchName}%`, `%${searchName}%`);
   }
 
-  query += ` ORDER BY u.first_name ASC`;  // จัดเรียงข้อมูลตามชื่อ
-
-  // Query สำหรับสรุปจำนวนเสื้อแต่ละไซซ์
-  let sizeSummaryQuery = `
-    SELECT s.size, COUNT(*) AS count
-    FROM shirt_sizes s
-    JOIN users u ON s.user_id = u.id
-    JOIN sub_departments sd ON u.sub_department_id = sd.id
-    JOIN major_departments md ON sd.major_department_id = md.id
-  `;
-
-  if (selectedMajorDepartment !== 'all') {
-    sizeSummaryQuery += ` WHERE md.id = ?`;
-  }
-
-  if (selectedSubDepartment !== 'all') {
-    sizeSummaryQuery += selectedMajorDepartment !== 'all' ? ` AND` : ` WHERE`;
-    sizeSummaryQuery += ` sd.id = ?`;
-  }
-
-  sizeSummaryQuery += ` GROUP BY s.size ORDER BY s.size ASC`;  // สรุปจำนวนตามไซซ์
-
-  // Query หลักสำหรับดึงข้อมูลผู้ใช้
-  connection.query(query, queryParams, (err, results) => {
+  // นับจำนวนทั้งหมดก่อนเพื่อนำไปคำนวณจำนวนหน้า
+  let countQuery = `SELECT COUNT(*) as total FROM (${query}) as totalUsers`;
+  connection.query(countQuery, queryParams, (err, countResult) => {
     if (err) throw err;
 
-    // Query สำหรับสรุปจำนวนเสื้อแต่ละไซซ์
-    connection.query(sizeSummaryQuery, queryParams, (err, sizeSummaryResults) => {
+    const totalUsers = countResult[0].total;
+    const totalPages = Math.ceil(totalUsers / pageSize);
+
+    // เพิ่ม LIMIT สำหรับ pagination
+    query += ` ORDER BY u.first_name ASC LIMIT ?, ?`;
+    queryParams.push((page - 1) * pageSize, pageSize);
+
+    // Query หลักสำหรับดึงข้อมูลผู้ใช้
+    connection.query(query, queryParams, (err, results) => {
       if (err) throw err;
 
-      // Query สำหรับดึงรายชื่อหน่วยงานใหญ่ทั้งหมด
-      connection.query('SELECT * FROM major_departments', (err, majorDepartments) => {
+      // Query สำหรับสรุปจำนวนเสื้อแต่ละไซซ์
+      let sizeSummaryQuery = `
+        SELECT s.size, COUNT(*) AS count
+        FROM shirt_sizes s
+        JOIN users u ON s.user_id = u.id
+        JOIN sub_departments sd ON u.sub_department_id = sd.id
+        JOIN major_departments md ON sd.major_department_id = md.id
+      `;
+
+      if (selectedMajorDepartment !== 'all') {
+        sizeSummaryQuery += ` WHERE md.id = ?`;
+      }
+
+      if (selectedSubDepartment !== 'all') {
+        sizeSummaryQuery += selectedMajorDepartment !== 'all' ? ` AND` : ` WHERE`;
+        sizeSummaryQuery += ` sd.id = ?`;
+      }
+
+      sizeSummaryQuery += ` GROUP BY s.size ORDER BY s.size ASC`;
+
+      connection.query(sizeSummaryQuery, queryParams.slice(0, queryParams.length - 2), (err, sizeSummaryResults) => {
         if (err) throw err;
 
-        // Query สำหรับดึงรายชื่อหน่วยงานย่อยทั้งหมด
-        connection.query('SELECT * FROM sub_departments', (err, subDepartments) => {
+        connection.query('SELECT * FROM major_departments', (err, majorDepartments) => {
           if (err) throw err;
 
-          res.render('admin', {
-            sizes: results,  // ข้อมูลผู้ใช้และไซซ์เสื้อ
-            sizeSummary: sizeSummaryResults,  // ข้อมูลสรุปจำนวนเสื้อแต่ละไซซ์
-            majorDepartments,  // ข้อมูลหน่วยงานใหญ่ทั้งหมด
-            subDepartments,  // ข้อมูลหน่วยงานย่อยทั้งหมด
-            selectedMajorDepartment,  // หน่วยงานใหญ่ที่เลือกอยู่ในขณะนี้
-            selectedSubDepartment,  // หน่วยงานย่อยที่เลือกอยู่ในขณะนี้
-            showAllUsers,  // สถานะการแสดงข้อมูลทั้งหมดหรือเฉพาะผู้ที่มีไซซ์เสื้อ
-            searchName  // คำค้นหาชื่อหรือนามสกุลผู้ใช้
+          connection.query('SELECT * FROM sub_departments', (err, subDepartments) => {
+            if (err) throw err;
+
+            res.render('admin', {
+              sizes: results,
+              sizeSummary: sizeSummaryResults,
+              majorDepartments,
+              subDepartments,
+              selectedMajorDepartment,
+              selectedSubDepartment,
+              showAllUsers,
+              searchName,
+              page,
+              totalPages,
+            });
           });
         });
       });
@@ -147,6 +160,39 @@ app.get('/download-csv', (req, res) => {
   });
 });
 
+// ดาวน์โหลด CSV สรุปจำนวนไซซ์เสื้อ
+app.get('/download-size-summary-csv', (req, res) => {
+  // Query สำหรับสรุปจำนวนไซซ์เสื้อในแต่ละหน่วยงาน
+  let query = `
+    SELECT 
+      sd.sub_department_name,
+      s.size,
+      COUNT(*) AS count
+    FROM shirt_sizes s
+    JOIN users u ON s.user_id = u.id
+    JOIN sub_departments sd ON u.sub_department_id = sd.id
+    JOIN major_departments md ON sd.major_department_id = md.id
+    GROUP BY sd.sub_department_name, s.size
+    ORDER BY sd.sub_department_name, s.size;
+  `;
+
+  connection.query(query, (err, results) => {
+    if (err) throw err;
+
+    // สร้างข้อมูล CSV โดยที่คอลัมน์คือไซซ์เสื้อ และแถวคือหน่วยงาน
+    let csvContent = '\uFEFF' + 'Sub Department,Size,Count\n';
+    results.forEach(row => {
+      csvContent += `${row.sub_department_name},${row.size},${row.count}\n`;
+    });
+
+    const fileName = 'size-summary.csv';
+
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename=${fileName}`);
+    res.send(csvContent);
+  });
+});
+
 
 // แสดงหน้าเลือกแผนก
 app.get('/', (req, res) => {
@@ -169,22 +215,30 @@ app.post('/start-recording', (req, res) => {
 
   // Query เพื่อดึงรายชื่อผู้ใช้ในแผนกย่อย และข้อมูลไซซ์เสื้อที่เคยบันทึก
   const query = `
-    SELECT u.id AS user_id, u.first_name, u.last_name, s.size 
+    SELECT u.id AS user_id, u.first_name, u.last_name, s.size, sd.sub_department_name
     FROM users u
     LEFT JOIN shirt_sizes s ON u.id = s.user_id
+    JOIN sub_departments sd ON u.sub_department_id = sd.id
     WHERE u.sub_department_id = ?`;
 
   connection.query(query, [subDepartmentId], (err, users) => {
+    if (err) throw err;
+
+    // ตรวจสอบว่ามีข้อมูลไซซ์เสื้อก่อนหน้านี้หรือไม่
+    const hasPreviousData = users.some(user => user.size !== null);
+
+    // Query ดึงชื่อหน่วยงานย่อย
+    const departmentQuery = `SELECT sub_department_name FROM sub_departments WHERE id = ?`;
+    connection.query(departmentQuery, [subDepartmentId], (err, result) => {
       if (err) throw err;
 
-      // ตรวจสอบว่ามีผู้ใช้ที่มีข้อมูลไซซ์เสื้อหรือไม่
-      const hasPreviousData = users.some(user => user.size);
+      const subDepartmentName = result.length > 0 ? result[0].sub_department_name : "Unknown";
 
       // ส่งข้อมูลผู้ใช้พร้อมไซซ์เสื้อที่เคยบันทึกไปยังหน้า record_size.ejs
-      res.render('record_size', { users, subDepartmentId, hasPreviousData });
+      res.render('record_size', { users, subDepartmentId, subDepartmentName, hasPreviousData });
+    });
   });
 });
-
 
 
 // บันทึกข้อมูลไซซ์เสื้อ
@@ -233,6 +287,29 @@ app.get('/api/sub-departments', (req, res) => {
     res.json({ subDepartments: results });
   });
 });
+
+app.post('/add-user', (req, res) => {
+  const { first_name, last_name, sub_department_id, position } = req.body;
+
+  // ตรวจสอบว่าข้อมูลครบถ้วน
+  if (!first_name || !last_name || !sub_department_id || !position) {
+      return res.status(400).json({ success: false, message: 'ข้อมูลไม่ครบถ้วน' });
+  }
+
+  // บันทึกข้อมูลลงฐานข้อมูล
+  const query = `
+      INSERT INTO users (first_name, last_name, sub_department_id, position, isUserAdded)
+      VALUES (?, ?, ?, ?, TRUE)
+  `;
+
+  connection.query(query, [first_name, last_name, sub_department_id, position], (err, result) => {
+      if (err) {
+          console.error('Error inserting user:', err);
+          return res.status(500).json({ success: false, message: 'เกิดข้อผิดพลาดในการบันทึกข้อมูล' });
+      }
+      res.json({ success: true, message: 'เพิ่มผู้ใช้สำเร็จ' });
+  });
+})
 
 
 // เริ่ม server

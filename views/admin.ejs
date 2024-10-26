@@ -60,12 +60,13 @@
 			</a>
 
 			<!-- ตารางแสดงข้อมูล -->
-			<div class="overflow-x-auto">
-				<table class="table table-zebra w-full text-sm sm:text-base">
+			<div class="overflow-x-auto mb-6">
+				<table class="table table-zebra w-full">
 					<thead>
 						<tr>
 							<th>ชื่อ</th>
 							<th>นามสกุล</th>
+							<th>ตำแหน่ง</th>
 							<th>ไซซ์</th>
 							<th>หน่วยงาน</th>
 							<th>สำนัก/คณะ/สถาบัน</th>
@@ -76,7 +77,8 @@
 							<tr>
 								<td><%= size.first_name %></td>
 								<td><%= size.last_name %></td>
-								<td><%= size.size %></td>
+								<td><%= size.position %></td>
+								<td><%= size.size || '-' %></td>
 								<td><%= size.sub_department_name %></td>
 								<td><%= size.major_department_name %></td>
 							</tr>
@@ -85,10 +87,34 @@
 				</table>
 			</div>
 
+			<!-- Pagination Nav -->
+			<div class="flex justify-center items-center space-x-2 mt-4">
+				<% if (page > 1) { %>
+					<a href="?major_department=<%= selectedMajorDepartment %>&sub_department=<%= selectedSubDepartment %>&showAllUsers=<%= showAllUsers %>&search=<%= searchName %>&page=<%= page - 1 %>" class="btn bg-gray-500 hover:bg-gray-600 text-white">หน้าก่อนหน้า</a>
+				<% } %>
+
+				<% for (let i = 1; i <= totalPages; i++) { %>
+					<a href="?major_department=<%= selectedMajorDepartment %>&sub_department=<%= selectedSubDepartment %>&showAllUsers=<%= showAllUsers %>&search=<%= searchName %>&page=<%= i %>" class="btn <%= i === page ? 'bg-orange-500' : 'bg-gray-500' %> hover:bg-gray-600 text-white">
+						<%= i %>
+					</a>
+				<% } %>
+
+				<% if (page < totalPages) { %>
+					<a href="?major_department=<%= selectedMajorDepartment %>&sub_department=<%= selectedSubDepartment %>&showAllUsers=<%= showAllUsers %>&search=<%= searchName %>&page=<%= page + 1 %>" class="btn bg-gray-500 hover:bg-gray-600 text-white">หน้าถัดไป</a>
+				<% } %>
+			</div>
+
 
 			<!-- ตารางสรุปจำนวนไซซ์เสื้อ -->
 			<div class="mt-8">
 				<h2 class="text-xl sm:text-2xl font-bold mb-4">สรุปจำนวนไซซ์เสื้อ</h2>
+				<!-- ปุ่มดาวน์โหลดสรุปจำนวนไซซ์เสื้อเป็น CSV -->
+				<div class="mb-4">
+					<a href="/download-size-summary-csv" class="btn bg-gray-500 hover:bg-gray-500 text-white w-full sm:w-auto text-center">
+						ดาวน์โหลดสรุปจำนวนไซซ์เสื้อเป็น CSV
+					</a>
+				</div>
+
 				<div class="overflow-x-auto">
 					<table class="table table-zebra w-full text-sm sm:text-base">
 						<thead>

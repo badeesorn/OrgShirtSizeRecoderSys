@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 	<head>
 		<meta charset="UTF-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,9 +9,9 @@
 		<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
 		<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 		<!-- เพิ่ม SweetAlert2 -->
-
 		<title>บันทึกไซซ์เสื้อ</title>
 	</head>
+
 	<body>
 		<div class="container mx-auto p-6">
 			<h1 class="text-3xl font-bold mb-6 text-center">ระบบบันทึกไซซ์เสื้อเนื่องในโอกาส 65 ปี มจธ.</h1>
@@ -22,9 +23,49 @@
 				</div>
 			<% } %>
 
-      <div class="text-center mb-4">
-        <button id="sizeGuideBtn" class="btn bg-orange-500 text-white">ดูไซซ์เสื้อ</button>
-      </div>
+			<div class="text-center mb-4">
+				<button id="sizeGuideBtn" class="btn bg-orange-500 text-white">ดูไซซ์เสื้อ</button>
+			</div>
+
+			<!-- ปุ่มเพิ่มชื่อผู้ใช้ใหม่ -->
+			<button id="addUserButton" class="btn bg-gray-500 text-white mb-4">เพิ่มชื่อ (กรณีชื่อตกหล่น)</button>
+
+			<!-- Modal สำหรับเพิ่มผู้ใช้ใหม่ -->
+      <div id="addUserModal" class="fixed z-50 inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden">
+				<div class="bg-white p-6 rounded shadow-lg w-full max-w-sm">
+					<h2 class="text-xl font-bold mb-4 text-center">เพิ่มผู้ใช้ใหม่</h2>
+
+					<!-- แถบแจ้งเตือนภายใน Modal -->
+					<div id="addUserAlert" class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-4 rounded">
+						<p>คุณกำลังเพิ่มรายชื่อลงใน
+							<span id="departmentName"><%= subDepartmentName || '' %></span>
+						</p>
+					</div>
+
+					<!-- ฟอร์มสำหรับเพิ่มผู้ใช้ใหม่ -->
+					<form id="addUserForm" action="/add-user" method="POST">
+						<div class="mb-4">
+							<label for="firstName" class="block text-sm font-medium text-gray-700">ชื่อ</label>
+							<input type="text" id="firstName" name="first_name" class="input input-bordered w-full" required>
+						</div>
+						<div class="mb-4">
+							<label for="lastName" class="block text-sm font-medium text-gray-700">นามสกุล</label>
+							<input type="text" id="lastName" name="last_name" class="input input-bordered w-full" required>
+						</div>
+						<div class="mb-4">
+							<label for="position" class="block text-sm font-medium text-gray-700">ตำแหน่ง</label>
+							<input type="text" id="position" name="position" class="input input-bordered w-full" required>
+						</div>
+						<input type="hidden" id="sub_department_id" name="sub_department_id" value="<%= subDepartmentId %>">
+
+						<div class="flex justify-between">
+							<button type="button" id="cancelAddUser" class="btn bg-gray-500 text-white">ยกเลิก</button>
+							<button type="submit" class="btn bg-teal-500 hover:bg-teal-600 text-white">เพิ่ม</button>
+						</div>
+					</form>
+
+				</div>
+			</div>
 
 			<!-- ฟอร์มสำหรับบันทึกไซซ์เสื้อ -->
 			<form action="/save-sizes" method="POST">
@@ -47,19 +88,7 @@
 										<select name="sizes[]" class="select select-bordered w-full sm:w-2/3 lg:w-1/2">
 											<option value="">-- เลือกไซซ์ --</option>
 											<option value="หญิง SS" <%= user.size === "หญิง SS" ? "selected" : "" %>>หญิง SS</option>
-											<option value="หญิง S" <%= user.size === "หญิง S" ? "selected" : "" %>>หญิง S</option>
-											<option value="หญิง M" <%= user.size === "หญิง M" ? "selected" : "" %>>หญิง M</option>
-											<option value="หญิง L" <%= user.size === "หญิง L" ? "selected" : "" %>>หญิง L</option>
-											<option value="หญิง XL" <%= user.size === "หญิง XL" ? "selected" : "" %>>หญิง XL</option>
-											<option value="หญิง XXL" <%= user.size === "หญิง XXL" ? "selected" : "" %>>หญิง XXL</option>
-											<option value="ชาย S" <%= user.size === "ชาย S" ? "selected" : "" %>>ชาย S</option>
-											<option value="ชาย M" <%= user.size === "ชาย M" ? "selected" : "" %>>ชาย M</option>
-											<option value="ชาย L" <%= user.size === "ชาย L" ? "selected" : "" %>>ชาย L</option>
-											<option value="ชาย XL" <%= user.size === "ชาย XL" ? "selected" : "" %>>ชาย XL</option>
-											<option value="ชาย XXL" <%= user.size === "ชาย XXL" ? "selected" : "" %>>ชาย XXL</option>
-											<option value="ชาย LLL" <%= user.size === "ชาย LLL" ? "selected" : "" %>>ชาย LLL</option>
-											<option value="ชาย 4XL" <%= user.size === "ชาย 4XL" ? "selected" : "" %>>ชาย 4XL</option>
-											<option value="พิเศษ" <%= user.size === "พิเศษ" ? "selected" : "" %>>พิเศษ</option>
+											<!-- เพิ่มไซซ์อื่น ๆ ตามต้องการ -->
 										</select>
 									</td>
 								</tr>
@@ -77,45 +106,69 @@
 			</form>
 		</div>
 
-
 		<!-- SweetAlert2 Popup Script -->
 		<script>
 			document.getElementById('sizeGuideBtn').addEventListener('click', function () {
 				Swal.fire({
 					title: 'ขนาดเสื้อ',
-					html: `
-              <div style="text-align:left;">
-                <h2><b>ขนาดเสื้อผู้หญิง</b></h2>
-                <table border="1" cellspacing="0" cellpadding="5">
-                  <tr><th>ไซซ์</th><th>รอบอก x ความยาว</th><th>แบบ</th></tr>
-                  <tr><td>SS</td><td>34x24</td><td>เข้ารูป</td></tr>
-                  <tr><td>S</td><td>36x25</td><td>เข้ารูป</td></tr>
-                  <tr><td>M</td><td>38x26</td><td>เข้ารูป</td></tr>
-                  <tr><td>L</td><td>40x27</td><td>เข้ารูป</td></tr>
-                  <tr><td>XL</td><td>42x28</td><td>เข้ารูป</td></tr>
-                  <tr><td>XXL</td><td>44x29</td><td>เข้ารูป</td></tr>
-                </table>
-                <br>
-                <h2><b>ขนาดเสื้อผู้ชาย</b></h2>
-                <table border="1" cellspacing="0" cellpadding="5">
-                  <tr><th>ไซซ์</th><th>รอบอก x ความยาว</th><th>แบบ</th></tr>
-                  <tr><td>S</td><td>38x26</td><td>ทรงตรง</td></tr>
-                  <tr><td>M</td><td>40x27</td><td>ทรงตรง</td></tr>
-                  <tr><td>L</td><td>42x28</td><td>ทรงตรง</td></tr>
-                  <tr><td>XL</td><td>44x29</td><td>ทรงตรง</td></tr>
-                  <tr><td>XXL</td><td>46x30</td><td>ทรงตรง</td></tr>
-                  <tr><td>LLL</td><td>48x31</td><td>ทรงตรง</td></tr>
-                  <tr><td>4XL</td><td>50x31.5</td><td>ทรงตรง</td></tr>
-                  <tr><td>พิเศษ</td><td>52x32</td><td>ทรงตรง</td></tr>
-                </table>
-              </div>
-            `,
+					html: `<div style="text-align:left;">...ข้อมูลขนาดเสื้อ...</div>`,
 					width: '600px',
 					padding: '20px',
 					confirmButtonText: 'ปิด'
 				});
 			});
+
+			// เปิด modal สำหรับเพิ่มผู้ใช้ใหม่
+			document.getElementById('addUserButton').addEventListener('click', function () {
+				document.getElementById('addUserModal').classList.remove('hidden');
+			});
+
+			// ปิด modal สำหรับเพิ่มผู้ใช้ใหม่
+			document.getElementById('cancelAddUser').addEventListener('click', function () {
+				document.getElementById('addUserModal').classList.add('hidden');
+			});
+
+			document.getElementById('addUserForm').addEventListener('submit', function (event) {
+				event.preventDefault(); // ป้องกันการส่งฟอร์มแบบปกติ
+
+				const firstName = document.getElementById('firstName').value.trim();
+				const lastName = document.getElementById('lastName').value.trim();
+				const position = document.getElementById('position').value.trim();
+				const subDepartmentId = document.getElementById('sub_department_id').value;
+
+				if (! firstName || ! lastName || ! position) {
+					alert('กรุณากรอกชื่อ นามสกุลและตำแหน่งให้ครบถ้วน');
+					return;
+				}
+
+				// ส่งข้อมูล POST Request
+				fetch('/add-user', {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json'
+					},
+					body: JSON.stringify(
+						{first_name: firstName, last_name: lastName, sub_department_id: subDepartmentId, position: position}
+					)
+				}).then(response => {
+					if (!response.ok) {
+						throw new Error('Network response was not ok');
+					}
+					return response.json();
+				}).then(data => {
+					if (data.success) {
+						alert('เพิ่มผู้ใช้สำเร็จ');
+						location.reload();
+					} else {
+						alert('เกิดข้อผิดพลาดในการเพิ่มผู้ใช้');
+					}
+				}).catch(error => {
+					console.error('Error:', error);
+					alert('เกิดข้อผิดพลาดในการเพิ่มผู้ใช้');
+				});
+			});
 		</script>
 		<%- include('partials/footer') %>
 	</body>
+
 </html>
