@@ -8,6 +8,7 @@ app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static('public'));
 app.use(bodyParser.json());
+app.use(express.json());
 
 // แสดงหน้า admin
 app.get('/admin', (req, res) => {
@@ -194,7 +195,7 @@ app.get('/download-size-summary-csv', (req, res) => {
 });
 
 
-// แสดงหน้าเลือกแผนก
+// หน้าแรก แสดงตัวเลือกหน่วยงาน
 app.get('/', (req, res) => {
   // Query เพื่อดึงหน่วยงานใหญ่ทั้งหมด
   connection.query('SELECT * FROM major_departments', (err, majorDepartments) => {
@@ -210,8 +211,13 @@ app.get('/', (req, res) => {
   });
 });
 
+//ไปยังหน้าบันทึกไซซ์เสื้อ
 app.post('/start-recording', (req, res) => {
   const subDepartmentId = req.body.department;
+
+  if (!subDepartmentId) {
+    return res.status(400).json({ success: false, message: 'Missing subDepartmentId' });
+}
 
   // Query เพื่อดึงรายชื่อผู้ใช้ในแผนกย่อย และข้อมูลไซซ์เสื้อที่เคยบันทึก
   const query = `
@@ -230,7 +236,10 @@ app.post('/start-recording', (req, res) => {
     // Query ดึงชื่อหน่วยงานย่อย
     const departmentQuery = `SELECT sub_department_name FROM sub_departments WHERE id = ?`;
     connection.query(departmentQuery, [subDepartmentId], (err, result) => {
-      if (err) throw err;
+      if (err) {
+        console.error('Error fetching department name:', err);
+        return res.status(500).json({ success: false, message: 'Internal server error' });
+      }
 
       const subDepartmentName = result.length > 0 ? result[0].sub_department_name : "Unknown";
 
@@ -271,7 +280,7 @@ app.post('/save-sizes', (req, res) => {
 });
 
 
-// API เพื่อดึงแผนกย่อยตามหน่วยงานใหญ่
+// API เพื่อดึงหน่วยงานยตามสำนัก
 app.get('/api/sub-departments', (req, res) => {
   const majorDepartmentId = req.query.majorDepartmentId;
 
@@ -288,6 +297,7 @@ app.get('/api/sub-departments', (req, res) => {
   });
 });
 
+//เพิ่มผู้ใช้ด้วยตนเอง
 app.post('/add-user', (req, res) => {
   const { first_name, last_name, sub_department_id, position } = req.body;
 
@@ -311,10 +321,35 @@ app.post('/add-user', (req, res) => {
   });
 })
 
+//ค้นหาหน่วยงานย่อย
+app.get('/api/search-sub-departments', (req, res) => {
+  const query = req.query.query;
+
+  if (!query) {
+    return res.status(400).json({ error: 'Missing query parameter' });
+  }
+
+  const searchQuery = `
+    SELECT md.major_department_name, sd.sub_department_name
+    FROM sub_departments sd
+    JOIN major_departments md ON sd.major_department_id = md.id
+    WHERE sd.sub_department_name LIKE ? OR md.major_department_name LIKE ?
+    LIMIT 10
+  `;
+  
+  const queryParams = [`%${query}%`, `%${query}%`];
+
+  connection.query(searchQuery, queryParams, (err, results) => {
+    if (err) {
+      return res.status(500).json({ error: 'Database error' });
+    }
+    res.json({ subDepartments: results });
+  });
+});
+
 
 // เริ่ม server
 const PORT = process.env.PORT || 3000;
-
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
