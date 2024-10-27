@@ -86,10 +86,23 @@
 									<td class="px-4 py-2">
 										<input type="hidden" name="userIds[]" value="<%= user.user_id %>">
 										<select name="sizes[]" class="select select-bordered w-full sm:w-2/3 lg:w-1/2">
-											<option value="">-- เลือกไซซ์ --</option>
-											<option value="หญิง SS" <%= user.size === "หญิง SS" ? "selected" : "" %>>หญิง SS</option>
-											<!-- เพิ่มไซซ์อื่น ๆ ตามต้องการ -->
-										</select>
+                      <option value="">-- เลือกไซซ์ --</option>
+                      <option value="หญิง SS" <%= user.size === "หญิง SS" ? "selected" : "" %>>หญิง SS</option>
+                      <option value="หญิง S" <%= user.size === "หญิง S" ? "selected" : "" %>>หญิง S</option>
+                      <option value="หญิง M" <%= user.size === "หญิง M" ? "selected" : "" %>>หญิง M</option>
+                      <option value="หญิง L" <%= user.size === "หญิง L" ? "selected" : "" %>>หญิง L</option>
+                      <option value="หญิง XL" <%= user.size === "หญิง XL" ? "selected" : "" %>>หญิง XL</option>
+                      <option value="หญิง XXL" <%= user.size === "หญิง XXL" ? "selected" : "" %>>หญิง XXL</option>
+                      <option value="ชาย S" <%= user.size === "ชาย S" ? "selected" : "" %>>ชาย S</option>
+                      <option value="ชาย M" <%= user.size === "ชาย M" ? "selected" : "" %>>ชาย M</option>
+                      <option value="ชาย L" <%= user.size === "ชาย L" ? "selected" : "" %>>ชาย L</option>
+                      <option value="ชาย XL" <%= user.size === "ชาย XL" ? "selected" : "" %>>ชาย XL</option>
+                      <option value="ชาย XXL" <%= user.size === "ชาย XXL" ? "selected" : "" %>>ชาย XXL</option>
+                      <option value="ชาย LLL" <%= user.size === "ชาย LLL" ? "selected" : "" %>>ชาย LLL</option>
+                      <option value="ชาย 4XL" <%= user.size === "ชาย 4XL" ? "selected" : "" %>>ชาย 4XL</option>
+                      <option value="พิเศษ" <%= user.size === "พิเศษ" ? "selected" : "" %>>พิเศษ</option>
+                  </select>
+                  
 									</td>
 								</tr>
 							<% }) %>
