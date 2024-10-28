@@ -1,113 +1,130 @@
 <!DOCTYPE html>
 <html lang="en">
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- ลิงก์ฟอนต์ Sarabun -->
-    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link href="/css/output.css" rel="stylesheet">
-    <link href="/css/styles.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
-    <title>เลือกหน่วยงาน</title>
-    <style>
-        body {
-            font-family: 'Sarabun', sans-serif;
-        }
-    </style>
-</head>
+	<head>
+		<meta charset="UTF-8">
+		<meta
+		name="viewport" content="width=device-width, initial-scale=1.0">
+		<!-- ลิงก์ฟอนต์ Sarabun -->
+		<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
+		<link href="/css/output.css" rel="stylesheet">
+		<link href="/css/styles.css" rel="stylesheet">
+		<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+		<title>เลือกหน่วยงาน</title>
+		<style>
+			body {
+				font-family: 'Sarabun', sans-serif;
+			}
+		</style>
+	</head>
 
-<body>
-    <div class="container mx-auto p-6 max-w-xl">
-        <h1 class="text-3xl font-bold mb-6 text-center">ระบบบันทึกไซซ์เสื้อที่ระลึกเนื่องในโอกาส 65 ปี มจธ.</h1>
-        <h1 class="text-2xl font-bold mb-6 text-center">
-            โปรดเลือกหน่วยงานของท่าน
-        </h1>
+	<body>
+		<div class="container mx-auto p-6 max-w-xl">
+			<h1 class="text-3xl font-bold mb-6 text-center">ระบบบันทึกไซซ์เสื้อที่ระลึกเนื่องในโอกาส 65 ปี มจธ.</h1>
+			<h1 class="text-2xl font-bold mb-6 text-center">
+				โปรดเลือกหน่วยงานของท่าน
+			</h1>
 
-        <form action="/start-recording" method="POST">
-            <!-- เลือก สำนัก/คณะ/สถาบัน -->
-            <div class="relative inline-block text-left w-full mb-4">
-                <label for="majorDepartment" class="block text-sm font-medium text-gray-700">เลือกสำนัก/คณะ/สถาบัน</label>
-                <select id="majorDepartment" class="block w-full mt-1 rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                    <option value="">-- เลือกสำนัก/คณะ/สถาบัน --</option>
-                    <% majorDepartments.forEach(major => { %>
-                        <option value="<%= major.id %>"><%= major.major_department_name %></option>
-                    <% }) %>
-                </select>
+			<form
+				action="/start-recording" method="POST">
+				<!-- เลือก สำนัก/คณะ/สถาบัน -->
+				<div class="relative inline-block text-left w-full mb-4">
+					<label for="majorDepartment" class="block text-sm font-medium text-gray-700">เลือกสำนัก/คณะ/สถาบัน</label>
+					<select id="majorDepartment" class="block w-full mt-1 rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+						<option value="">-- เลือกสำนัก/คณะ/สถาบัน --</option>
+						<% majorDepartments.forEach(major => { %>
+							<option value="<%= major.id %>"><%= major.major_department_name %></option>
+						<% }) %>
+					</select>
+				</div>
+
+				<!-- เลือกหน่วยงาน -->
+				<div class="relative inline-block text-left w-full mb-4">
+					<label for="subDepartment" class="block text-sm font-medium text-gray-700">เลือกหน่วยงาน</label>
+					<select id="subDepartment" name="department" class="block w-full mt-1 rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" disabled>
+						<option value="">-- เลือกหน่วยงาน --</option>
+					</select>
+				</div>
+
+				<div
+					class="flex justify-center mt-6">
+					<!-- ปุ่มเริ่มบันทึกที่ปิดไว้ในตอนแรก -->
+					<button type="submit" class="btn w-full max-w-md bg-orange-500 hover:bg-orange-600 text-white" id="startRecordingButton" disabled>
+						เริ่มบันทึกข้อมูล
+					</button>
+				</div>
+			</form>        
+            <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-4 rounded mt-4">
+                <p class="font-bold mb-2">หมายเหตุ:</p>
+                <ol class="list-decimal list-inside space-y-2">
+                    <li>
+                        เมื่อกรอกข้อมูลเรียบร้อยแล้วท่านสามารถคลิกบันทึกได้ทันที แม้ข้อมูลยังไม่ครบ 
+                        ซึ่งท่านสามารถบันทึกและแก้ไขข้อมูลได้จนถึงวันที่ 8 พ.ย. 2567 
+                        ซึ่งเป็นวันสุดท้ายของการสำรวจไซซ์เสื้อ
+                    </li>
+                    <li>
+                        ข้อมูลไซซ์เสื้อนี้ใช้ขนาดเดียวกันกับเสื้อ 60 ปี มจธ. ซึ่งท่านสามารถใช้เสื้อตัวดังกล่าวอ้างอิงได้
+                    </li>
+                    <li style="color: red;"><b>
+                        หากท่านใดมีความประสงค์จะลองเสื้อขนาดจริง มีให้บริการ ณ ห้องประชุม AD410 ชั้น 4 อาคารสำนักอธิการบดี ระหว่างวันที่ 4-6 พ.ย. 2567 ในเวลาทำการ</b>
+                    </li>
+                    <li>
+                        สำหรับบุคลากรหญิงมุสลิมสามารถระบุเสื้อแขนยาวได้ โดยขอให้บันทึกขนาดไซซ์ปกติในระบบ และโปรดติดต่อแจ้งความประสงค์ที่ กสต. โทร <a href="tel:024708416">8416</a> หรืออีเมล <a href="mailto:pr@mail.kmutt.ac.th">pr@mail.kmutt.ac.th</a>
+                    </li>
+                </ol>
             </div>
+		</div>
 
-            <!-- เลือกหน่วยงาน -->
-            <div class="relative inline-block text-left w-full mb-4">
-                <label for="subDepartment" class="block text-sm font-medium text-gray-700">เลือกหน่วยงาน</label>
-                <select id="subDepartment" name="department" class="block w-full mt-1 rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" disabled>
-                    <option value="">-- เลือกหน่วยงาน --</option>
-                </select>
-            </div>
+		<script>
+			const majorDepartmentSelect = document.getElementById('majorDepartment');
+			const subDepartmentSelect = document.getElementById('subDepartment');
+			const startRecordingButton = document.getElementById('startRecordingButton');
 
-            <div class="flex justify-center mt-6">
-                <!-- ปุ่มเริ่มบันทึกที่ปิดไว้ในตอนแรก -->
-                <button type="submit" class="btn w-full max-w-md bg-orange-500 hover:bg-orange-600 text-white" id="startRecordingButton" disabled>
-                    เริ่มบันทึกข้อมูล
-                </button>
-            </div>
-        </form>
-    </div>
+			// เมื่อมีการเลือกหน่วยงานใหญ่ ให้ทำการดึงแผนกย่อย
+			majorDepartmentSelect.addEventListener('change', function () {
+				const majorId = this.value;
+				if (majorId) {
+					fetch(`/api/sub-departments?majorDepartmentId=${majorId}`).then(response => response.json()).then(data => { // เคลียร์แผนกย่อยที่เลือกไว้ก่อนหน้า
+						subDepartmentSelect.innerHTML = '<option value="">-- เลือกหน่วยงาน --</option>';
+						// เพิ่มตัวเลือกแผนกย่อยที่ดึงมาจากฐานข้อมูล
+						data.subDepartments.forEach(sub => {
+							const option = document.createElement('option');
+							option.value = sub.id;
+							option.textContent = sub.sub_department_name;
+							subDepartmentSelect.appendChild(option);
+						});
+						// เปิดให้เลือกแผนกย่อย
+						subDepartmentSelect.disabled = false;
+					}).catch(err => console.error("Error fetching sub-departments:", err));
+				} else { // ถ้าไม่ได้เลือกหน่วยงานใหญ่ ให้ปิดการใช้งานแผนกย่อย
+					subDepartmentSelect.disabled = true;
+					startRecordingButton.disabled = true;
+				}
+			});
 
-    <script>
-        const majorDepartmentSelect = document.getElementById('majorDepartment');
-        const subDepartmentSelect = document.getElementById('subDepartment');
-        const startRecordingButton = document.getElementById('startRecordingButton');
+			// เมื่อเลือกแผนกย่อย ให้เปิดปุ่มเริ่มบันทึก
+			subDepartmentSelect.addEventListener('change', function () {
+				if (this.value) {
+					startRecordingButton.disabled = false;
+				} else {
+					startRecordingButton.disabled = true;
+				}
+			});
 
-        // เมื่อมีการเลือกหน่วยงานใหญ่ ให้ทำการดึงแผนกย่อย
-        majorDepartmentSelect.addEventListener('change', function () {
-            const majorId = this.value;
-            if (majorId) {
-                fetch(`/api/sub-departments?majorDepartmentId=${majorId}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        // เคลียร์แผนกย่อยที่เลือกไว้ก่อนหน้า
-                        subDepartmentSelect.innerHTML = '<option value="">-- เลือกหน่วยงาน --</option>';
-                        // เพิ่มตัวเลือกแผนกย่อยที่ดึงมาจากฐานข้อมูล
-                        data.subDepartments.forEach(sub => {
-                            const option = document.createElement('option');
-                            option.value = sub.id;
-                            option.textContent = sub.sub_department_name;
-                            subDepartmentSelect.appendChild(option);
-                        });
-                        // เปิดให้เลือกแผนกย่อย
-                        subDepartmentSelect.disabled = false;
-                    })
-                    .catch(err => console.error("Error fetching sub-departments:", err));
-            } else { 
-                // ถ้าไม่ได้เลือกหน่วยงานใหญ่ ให้ปิดการใช้งานแผนกย่อย
-                subDepartmentSelect.disabled = true;
-                startRecordingButton.disabled = true;
-            }
-        });
+			// แสดงการแจ้งเตือนเมื่อข้อมูลถูกบันทึกเสร็จสิ้น
+			function getQueryParam(param) {
+				const urlParams = new URLSearchParams(window.location.search);
+				return urlParams.get(param);
+			}
 
-        // เมื่อเลือกแผนกย่อย ให้เปิดปุ่มเริ่มบันทึก
-        subDepartmentSelect.addEventListener('change', function () {
-            if (this.value) {
-                startRecordingButton.disabled = false;
-            } else {
-                startRecordingButton.disabled = true;
-            }
-        });
+			const isSaved = getQueryParam('saved');
+			if (isSaved === 'true') {
+				Swal.fire({title: 'Success!', text: 'บันทึกข้อมูลเสร็จสิ้น', icon: 'success', confirmButtonText: 'OK'});
+			}
+		</script>
 
-        // แสดงการแจ้งเตือนเมื่อข้อมูลถูกบันทึกเสร็จสิ้น
-        function getQueryParam(param) {
-            const urlParams = new URLSearchParams(window.location.search);
-            return urlParams.get(param);
-        }
-
-        const isSaved = getQueryParam('saved');
-        if (isSaved === 'true') {
-            Swal.fire({title: 'Success!', text: 'บันทึกข้อมูลเสร็จสิ้น', icon: 'success', confirmButtonText: 'OK'});
-        }
-    </script>
-
-    <%- include('partials/footer') %>
-</body>
+		<%- include('partials/footer') %>
+	</body>
 
 </html>
