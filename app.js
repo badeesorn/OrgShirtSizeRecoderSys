@@ -16,8 +16,9 @@ app.get('/admin', (req, res) => {
   const selectedSubDepartment = req.query.sub_department || 'all';
   const showAllUsers = req.query.showAllUsers === 'true';
   const searchName = req.query.search || '';
-  const page = parseInt(req.query.page) || 1; // หน้าที่ต้องการแสดงผล
-  const pageSize = 10; // จำนวนรายการต่อหน้า
+  const page = Math.max(parseInt(req.query.page) || 1, 1); // Ensure page is at least 1
+  const pageSize = 30; // จำนวนรายการต่อหน้า
+  const offset = (page - 1) * pageSize; // Offset calculation
 
   // Query หลักสำหรับดึงข้อมูลผู้ใช้และไซซ์เสื้อ
   let query = `
@@ -62,7 +63,7 @@ app.get('/admin', (req, res) => {
 
     // เพิ่ม LIMIT สำหรับ pagination
     query += ` ORDER BY u.first_name ASC LIMIT ?, ?`;
-    queryParams.push((page - 1) * pageSize, pageSize);
+    queryParams.push(offset, pageSize);
 
     // Query หลักสำหรับดึงข้อมูลผู้ใช้
     connection.query(query, queryParams, (err, results) => {
@@ -119,7 +120,7 @@ app.get('/admin', (req, res) => {
 // ดาวน์โหลด CSV
 app.get('/download-csv', (req, res) => {
   const subDepartment = req.query.sub_department || 'all';
-  const includeAllUsers = req.query.includeAllUsers === 'true'; // flag สำหรับดาวน์โหลดรวมผู้ใช้ที่ยังไม่ได้บันทึกข้อมูลด้วย
+  const includeAllUsers = req.query.includeAllUsers === 'true';
 
   let query = `
     SELECT u.first_name, u.last_name, u.position, s.size, md.major_department_name, d.sub_department_name
@@ -129,13 +130,15 @@ app.get('/download-csv', (req, res) => {
     JOIN major_departments md ON d.major_department_id = md.id
   `;
 
-  let conditions = [];
+  const conditions = [];
+  const queryParams = [];
+
   if (subDepartment !== 'all') {
-    conditions.push(`u.sub_department_id = ${connection.escape(subDepartment)}`);
+    conditions.push(`u.sub_department_id = ?`);
+    queryParams.push(subDepartment);
   }
 
   if (!includeAllUsers) {
-    // ดาวน์โหลดเฉพาะผู้ใช้ที่มีข้อมูลบันทึกแล้ว
     conditions.push(`s.size IS NOT NULL`);
   }
 
@@ -143,10 +146,10 @@ app.get('/download-csv', (req, res) => {
     query += ` WHERE ` + conditions.join(' AND ');
   }
 
-  connection.query(query, (err, results) => {
+  connection.query(query, queryParams, (err, results) => {
     if (err) throw err;
 
-    let csvContent = '\uFEFF' + 'First Name,Last Name,Position,Size,Major Department,Sub Department\n';
+    let csvContent = '﻿' + 'First Name,Last Name,Position,Size,Major Department,Sub Department\n';
     results.forEach(row => {
       csvContent += `${row.first_name},${row.last_name},${row.position || ''},${row.size || ''},${row.major_department_name},${row.sub_department_name}\n`;
     });
@@ -163,7 +166,6 @@ app.get('/download-csv', (req, res) => {
 
 // ดาวน์โหลด CSV สรุปจำนวนไซซ์เสื้อ
 app.get('/download-size-summary-csv', (req, res) => {
-  // Query สำหรับสรุปจำนวนไซซ์เสื้อในแต่ละหน่วยงาน
   let query = `
     SELECT 
       sd.sub_department_name,
@@ -180,8 +182,7 @@ app.get('/download-size-summary-csv', (req, res) => {
   connection.query(query, (err, results) => {
     if (err) throw err;
 
-    // สร้างข้อมูล CSV โดยที่คอลัมน์คือไซซ์เสื้อ และแถวคือหน่วยงาน
-    let csvContent = '\uFEFF' + 'Sub Department,Size,Count\n';
+    let csvContent = '﻿' + 'Sub Department,Size,Count\n';
     results.forEach(row => {
       csvContent += `${row.sub_department_name},${row.size},${row.count}\n`;
     });
@@ -194,32 +195,27 @@ app.get('/download-size-summary-csv', (req, res) => {
   });
 });
 
-
 // หน้าแรก แสดงตัวเลือกหน่วยงาน
 app.get('/', (req, res) => {
-  // Query เพื่อดึงหน่วยงานใหญ่ทั้งหมด
   connection.query('SELECT * FROM major_departments', (err, majorDepartments) => {
+    if (err) throw err;
+
+    connection.query('SELECT * FROM departments', (err, departments) => {
       if (err) throw err;
 
-      // Query เพื่อดึงแผนกทั้งหมด
-      connection.query('SELECT * FROM departments', (err, departments) => {
-          if (err) throw err;
-
-          // ส่งข้อมูลทั้งหน่วยงานใหญ่และแผนกไปที่ EJS
-          res.render('select_department', { majorDepartments, departments });
-      });
+      res.render('select_department', { majorDepartments, departments });
+    });
   });
 });
 
-//ไปยังหน้าบันทึกไซซ์เสื้อ
+// ไปยังหน้าบันทึกไซซ์เสื้อ
 app.post('/start-recording', (req, res) => {
   const subDepartmentId = req.body.department;
 
   if (!subDepartmentId) {
     return res.status(400).json({ success: false, message: 'Missing subDepartmentId' });
-}
+  }
 
-  // Query เพื่อดึงรายชื่อผู้ใช้ในแผนกย่อย และข้อมูลไซซ์เสื้อที่เคยบันทึก
   const query = `
     SELECT u.id AS user_id, u.first_name, u.last_name, s.size, sd.sub_department_name
     FROM users u
@@ -230,10 +226,8 @@ app.post('/start-recording', (req, res) => {
   connection.query(query, [subDepartmentId], (err, users) => {
     if (err) throw err;
 
-    // ตรวจสอบว่ามีข้อมูลไซซ์เสื้อก่อนหน้านี้หรือไม่
     const hasPreviousData = users.some(user => user.size !== null);
 
-    // Query ดึงชื่อหน่วยงานย่อย
     const departmentQuery = `SELECT sub_department_name FROM sub_departments WHERE id = ?`;
     connection.query(departmentQuery, [subDepartmentId], (err, result) => {
       if (err) {
@@ -243,12 +237,10 @@ app.post('/start-recording', (req, res) => {
 
       const subDepartmentName = result.length > 0 ? result[0].sub_department_name : "Unknown";
 
-      // ส่งข้อมูลผู้ใช้พร้อมไซซ์เสื้อที่เคยบันทึกไปยังหน้า record_size.ejs
       res.render('record_size', { users, subDepartmentId, subDepartmentName, hasPreviousData });
     });
   });
 });
-
 
 // บันทึกข้อมูลไซซ์เสื้อ
 app.post('/save-sizes', (req, res) => {
@@ -257,28 +249,27 @@ app.post('/save-sizes', (req, res) => {
   const queries = [];
 
   userIds.forEach((userId, index) => {
-      const size = sizes[index];
-      if (parseInt(userId, 10) > 0 && size !== "") {
-          queries.push(
-              new Promise((resolve, reject) => {
-                  const query = `
-                  INSERT INTO shirt_sizes (user_id, size)
-                  VALUES (?, ?)
-                  ON DUPLICATE KEY UPDATE size = ?`;
-                  connection.query(query, [userId, size, size], (err, result) => {
-                      if (err) reject(err);
-                      else resolve();
-                  });
-              })
-          );
-      }
+    const size = sizes[index];
+    if (parseInt(userId, 10) > 0 && size !== "") {
+      queries.push(
+        new Promise((resolve, reject) => {
+          const query = `
+            INSERT INTO shirt_sizes (user_id, size)
+            VALUES (?, ?)
+            ON DUPLICATE KEY UPDATE size = ?`;
+          connection.query(query, [userId, size, size], (err) => {
+            if (err) reject(err);
+            else resolve();
+          });
+        })
+      );
+    }
   });
 
   Promise.all(queries)
-      .then(() => res.redirect('/?saved=true'))  // ส่งผู้ใช้กลับไปที่หน้า user พร้อม query parameter
-      .catch(err => res.status(500).send(err));
+    .then(() => res.redirect('/?saved=true'))
+    .catch(err => res.status(500).send(err));
 });
-
 
 // API เพื่อดึงหน่วยงานยตามสำนัก
 app.get('/api/sub-departments', (req, res) => {
@@ -297,31 +288,29 @@ app.get('/api/sub-departments', (req, res) => {
   });
 });
 
-//เพิ่มผู้ใช้ด้วยตนเอง
+// เพิ่มผู้ใช้ด้วยตนเอง
 app.post('/add-user', (req, res) => {
   const { first_name, last_name, sub_department_id, position } = req.body;
 
-  // ตรวจสอบว่าข้อมูลครบถ้วน
   if (!first_name || !last_name || !sub_department_id || !position) {
-      return res.status(400).json({ success: false, message: 'ข้อมูลไม่ครบถ้วน' });
+    return res.status(400).json({ success: false, message: 'ข้อมูลไม่ครบถ้วน' });
   }
 
-  // บันทึกข้อมูลลงฐานข้อมูล
   const query = `
-      INSERT INTO users (first_name, last_name, sub_department_id, position, isUserAdded)
-      VALUES (?, ?, ?, ?, TRUE)
+    INSERT INTO users (first_name, last_name, sub_department_id, position, isUserAdded)
+    VALUES (?, ?, ?, ?, TRUE)
   `;
 
-  connection.query(query, [first_name, last_name, sub_department_id, position], (err, result) => {
-      if (err) {
-          console.error('Error inserting user:', err);
-          return res.status(500).json({ success: false, message: 'เกิดข้อผิดพลาดในการบันทึกข้อมูล' });
-      }
-      res.json({ success: true, message: 'เพิ่มผู้ใช้สำเร็จ' });
+  connection.query(query, [first_name, last_name, sub_department_id, position], (err) => {
+    if (err) {
+      console.error('Error inserting user:', err);
+      return res.status(500).json({ success: false, message: 'เกิดข้อผิดพลาดในการบันทึกข้อมูล' });
+    }
+    res.json({ success: true, message: 'เพิ่มผู้ใช้สำเร็จ' });
   });
-})
+});
 
-//ค้นหาหน่วยงานย่อย
+// ค้นหาหน่วยงานย่อย
 app.get('/api/search-sub-departments', (req, res) => {
   const query = req.query.query;
 
@@ -336,7 +325,7 @@ app.get('/api/search-sub-departments', (req, res) => {
     WHERE sd.sub_department_name LIKE ? OR md.major_department_name LIKE ?
     LIMIT 10
   `;
-  
+
   const queryParams = [`%${query}%`, `%${query}%`];
 
   connection.query(searchQuery, queryParams, (err, results) => {
@@ -347,9 +336,8 @@ app.get('/api/search-sub-departments', (req, res) => {
   });
 });
 
-
 // เริ่ม server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+  console.log(`Server is running on port ${PORT}`);
 });

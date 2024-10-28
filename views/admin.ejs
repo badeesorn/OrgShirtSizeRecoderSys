@@ -1,187 +1,177 @@
 <!DOCTYPE html>
 <html lang="en">
-	<head>
-		<meta charset="UTF-8">
-		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<link href="/css/output.css" rel="stylesheet">
-		<link href="/css/styles.css" rel="stylesheet">
-		<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
-		<title>Admin - View Shirt Sizes</title>
-		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-	</head>
-	<body>
-		<div class="container mx-auto p-4 sm:p-6">
-			<h1 class="text-2xl sm:text-3xl font-bold mb-4 text-center">รายการและสรุปไซซ์เสื้อเนื่องในโอกาสครบรอบ 65 ปี มจธ.</h1>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="/css/output.css" rel="stylesheet">
+    <link href="/css/styles.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>Admin - View Shirt Sizes</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <div class="container mx-auto p-4 sm:p-6">
+        <h1 class="text-2xl sm:text-3xl font-bold mb-4 text-center">รายการและสรุปไซซ์เสื้อเนื่องในโอกาสครบรอบ 65 ปี มจธ.</h1>
 
-			<!-- Dropdown สำหรับเลือกสำนัก/คณะ/สถาบัน -->
-			<div class="mb-4">
-				<select name="major_department" id="majorDepartment" class="select select-bordered w-full">
-					<option value="all" <%= selectedMajorDepartment === 'all' ? 'selected' : '' %>>ทั้งหมด</option>
-					<% majorDepartments.forEach(major => { %>
-						<option value="<%= major.id %>" <%= selectedMajorDepartment === major.id.toString() ? 'selected' : '' %>><%= major.major_department_name %></option>
-					<% }) %>
-				</select>
-			</div>
+        <!-- Dropdown สำหรับเลือกสำนัก/คณะ/สถาบัน -->
+        <div class="mb-4">
+            <select name="major_department" id="majorDepartment" class="select select-bordered w-full">
+                <option value="all" <%= selectedMajorDepartment === 'all' ? 'selected' : '' %>>ทั้งหมด</option>
+                <% majorDepartments.forEach(major => { %>
+                    <option value="<%= major.id %>" <%= selectedMajorDepartment === major.id.toString() ? 'selected' : '' %>><%= major.major_department_name %></option>
+                <% }) %>
+            </select>
+        </div>
 
-			<!-- Dropdown สำหรับเลือกหน่วยงาน -->
-			<div class="mb-4">
-				<select name="sub_department" id="subDepartment" class="select select-bordered w-full" <%= selectedMajorDepartment === 'all' ? 'disabled' : '' %>>
-					<option value="all" <%= selectedSubDepartment === 'all' ? 'selected' : '' %>>ทั้งหมด</option>
-					<% subDepartments.forEach(sub => { %>
-						<% if (sub.major_department_id.toString() === selectedMajorDepartment.toString()) { %>
-							<option value="<%= sub.id %>" <%= selectedSubDepartment === sub.id.toString() ? 'selected' : '' %>><%= sub.sub_department_name %></option>
-						<% } %>
-					<% }) %>
-				</select>
-			</div>
+        <!-- Dropdown สำหรับเลือกหน่วยงาน -->
+        <div class="mb-4">
+            <select name="sub_department" id="subDepartment" class="select select-bordered w-full" <%= selectedMajorDepartment === 'all' ? 'disabled' : '' %>>
+                <option value="all" <%= selectedSubDepartment === 'all' ? 'selected' : '' %>>ทั้งหมด</option>
+                <% subDepartments.forEach(sub => { %>
+                    <% if (sub.major_department_id.toString() === selectedMajorDepartment.toString()) { %>
+                        <option value="<%= sub.id %>" <%= selectedSubDepartment === sub.id.toString() ? 'selected' : '' %>><%= sub.sub_department_name %></option>
+                    <% } %>
+                <% }) %>
+            </select>
+        </div>
 
-			<div class="mb-4 flex items-center">
-				<input type="text" id="searchName" class="input input-bordered w-full sm:max-w-xs" placeholder="ค้นหาจากชื่อ">
-				<button id="searchButton" class="btn bg-gray-500 hover:bg-gray-600 text-white ml-2 flex items-center">
-					<i class="fas fa-search mr-1"></i>
-					ค้นหา
-				</button>
-			</div>
-			<div class="mb-4 flex items-center">
-				<label for="showAllUsers" class="mr-2">แสดงรายชื่อทั้งหมด:</label>
-				<input type="checkbox" id="showAllUsers" class="toggle toggle-primary" <%= showAllUsers ? 'checked' : '' %>>
-			</div>
+        <div class="mb-4 flex items-center">
+            <input type="text" id="searchName" class="input input-bordered w-full sm:max-w-xs" placeholder="ค้นหาจากชื่อ">
+            <button id="searchButton" class="btn bg-gray-500 hover:bg-gray-600 text-white ml-2 flex items-center">
+                <i class="fas fa-search mr-1"></i>
+                ค้นหา
+            </button>
+        </div>
+        <div class="mb-4 flex items-center">
+            <label for="showAllUsers" class="mr-2">แสดงรายชื่อทั้งหมด:</label>
+            <input type="checkbox" id="showAllUsers" class="toggle toggle-primary" <%= showAllUsers ? 'checked' : '' %>>
+        </div>
 
+        <!-- ปุ่มดาวน์โหลดข้อมูล CSV -->
+        <!-- ปุ่มดาวน์โหลดเฉพาะที่บันทึกแล้ว -->
+        <a href="/download-csv?sub_department=<%= selectedSubDepartment %>&includeAllUsers=false" class="btn bg-orange-500 hover:bg-orange-600 text-white w-full sm:w-auto text-center">
+            ดาวน์โหลดข้อมูลเป็น CSV
+        </a>
 
-			<!-- ปุ่มดาวน์โหลดข้อมูล CSV -->
-			<!-- ปุ่มดาวน์โหลดเฉพาะที่บันทึกแล้ว -->
-			<a href="/download-csv?sub_department=<%= selectedSubDepartment %>&includeAllUsers=false" class="btn bg-orange-500 hover:bg-orange-600 text-white w-full sm:w-auto text-center">
-				ดาวน์โหลดข้อมูลเป็น CSV
-			</a>
+        <!-- ปุ่มดาวน์โหลดรวมรายชื่อที่ไม่ได้บันทึกข้อมูลด้วย -->
+        <a href="/download-csv?sub_department=<%= selectedSubDepartment %>&includeAllUsers=true" class="btn bg-gray-500 hover:bg-gray-600 text-white w-full sm:w-auto text-center">
+            ดาวน์โหลดข้อมูลเป็น CSV (รวมรายชื่อที่ไม่ได้บันทึกข้อมูลด้วย)
+        </a>
 
-			<!-- ปุ่มดาวน์โหลดรวมรายชื่อที่ไม่ได้บันทึกข้อมูลด้วย -->
-			<a href="/download-csv?sub_department=<%= selectedSubDepartment %>&includeAllUsers=true" class="btn bg-gray-500 hover:bg-gray-600 text-white w-full sm:w-auto text-center">
-				ดาวน์โหลดข้อมูลเป็น CSV (รวมรายชื่อที่ไม่ได้บันทึกข้อมูลด้วย)
-			</a>
+        <!-- ตารางแสดงข้อมูล -->
+        <div class="overflow-x-auto mb-6">
+            <table class="table table-zebra w-full">
+                <thead>
+                    <tr>
+                        <th>ชื่อ</th>
+                        <th>นามสกุล</th>
+                        <th>ตำแหน่ง</th>
+                        <th>ไซซ์</th>
+                        <th>หน่วยงาน</th>
+                        <th>สำนัก/คณะ/สถาบัน</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% sizes.forEach(size => { %>
+                        <tr>
+                            <td><%= size.first_name %></td>
+                            <td><%= size.last_name %></td>
+                            <td><%= size.position %></td>
+                            <td><%= size.size || '-' %></td>
+                            <td><%= size.sub_department_name %></td>
+                            <td><%= size.major_department_name %></td>
+                        </tr>
+                    <% }) %>
+                </tbody>
+            </table>
+        </div>
 
-			<!-- ตารางแสดงข้อมูล -->
-			<div class="overflow-x-auto mb-6">
-				<table class="table table-zebra w-full">
-					<thead>
-						<tr>
-							<th>ชื่อ</th>
-							<th>นามสกุล</th>
-							<th>ตำแหน่ง</th>
-							<th>ไซซ์</th>
-							<th>หน่วยงาน</th>
-							<th>สำนัก/คณะ/สถาบัน</th>
-						</tr>
-					</thead>
-					<tbody>
-						<% sizes.forEach(size => { %>
-							<tr>
-								<td><%= size.first_name %></td>
-								<td><%= size.last_name %></td>
-								<td><%= size.position %></td>
-								<td><%= size.size || '-' %></td>
-								<td><%= size.sub_department_name %></td>
-								<td><%= size.major_department_name %></td>
-							</tr>
-						<% }) %>
-					</tbody>
-				</table>
-			</div>
+        <!-- Pagination Nav -->
+        <div class="flex justify-center items-center space-x-4 mt-4">
+            <button onclick="previousPage()" class="btn bg-gray-500 text-white px-4 py-2 rounded-md" id="prevButton" <%= page === 1 ? 'disabled' : '' %>>หน้าก่อนหน้า</button>
+            <span id="currentPage" class="text-lg font-bold"><%= page %> / <%= totalPages %></span>
+            <button onclick="nextPage()" class="btn bg-gray-500 text-white px-4 py-2 rounded-md" id="nextButton" <%= page >= totalPages ? 'disabled' : '' %>>หน้าถัดไป</button>
+        </div>
 
-			<!-- Pagination Nav -->
-			<div class="flex justify-center items-center space-x-2 mt-4">
-				<% if (page > 1) { %>
-					<a href="?major_department=<%= selectedMajorDepartment %>&sub_department=<%= selectedSubDepartment %>&showAllUsers=<%= showAllUsers %>&search=<%= searchName %>&page=<%= page - 1 %>" class="btn bg-gray-500 hover:bg-gray-600 text-white">หน้าก่อนหน้า</a>
-				<% } %>
+        <!-- ตารางสรุปจำนวนไซซ์เสื้อ -->
+        <div class="mt-8">
+            <h2 class="text-xl sm:text-2xl font-bold mb-4">สรุปจำนวนไซซ์เสื้อ</h2>
+            <!-- ปุ่มดาวน์โหลดสรุปจำนวนไซซ์เสื้อเป็น CSV -->
+            <div class="mb-4">
+                <a href="/download-size-summary-csv" class="btn bg-gray-500 hover:bg-gray-500 text-white w-full sm:w-auto text-center">
+                    ดาวน์โหลดสรุปจำนวนไซซ์เสื้อเป็น CSV
+                </a>
+            </div>
 
-				<% for (let i = 1; i <= totalPages; i++) { %>
-					<a href="?major_department=<%= selectedMajorDepartment %>&sub_department=<%= selectedSubDepartment %>&showAllUsers=<%= showAllUsers %>&search=<%= searchName %>&page=<%= i %>" class="btn <%= i === page ? 'bg-orange-500' : 'bg-gray-500' %> hover:bg-gray-600 text-white">
-						<%= i %>
-					</a>
-				<% } %>
+            <div class="overflow-x-auto">
+                <table class="table table-zebra w-full text-sm sm:text-base">
+                    <thead>
+                        <tr>
+                            <th>ไซซ์</th>
+                            <th>จำนวน</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% sizeSummary.forEach(size => { %>
+                            <tr>
+                                <td><%= size.size %></td>
+                                <td><%= size.count %></td>
+                            </tr>
+                        <% }) %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 
-				<% if (page < totalPages) { %>
-					<a href="?major_department=<%= selectedMajorDepartment %>&sub_department=<%= selectedSubDepartment %>&showAllUsers=<%= showAllUsers %>&search=<%= searchName %>&page=<%= page + 1 %>" class="btn bg-gray-500 hover:bg-gray-600 text-white">หน้าถัดไป</a>
-				<% } %>
-			</div>
+    <script>
+        let currentPage = <%= page %>;
+        let totalPages = <%= totalPages %>;
 
+        function previousPage() {
+            if (currentPage > 1) {
+                currentPage--;
+                updatePageData();
+            }
+        }
 
-			<!-- ตารางสรุปจำนวนไซซ์เสื้อ -->
-			<div class="mt-8">
-				<h2 class="text-xl sm:text-2xl font-bold mb-4">สรุปจำนวนไซซ์เสื้อ</h2>
-				<!-- ปุ่มดาวน์โหลดสรุปจำนวนไซซ์เสื้อเป็น CSV -->
-				<div class="mb-4">
-					<a href="/download-size-summary-csv" class="btn bg-gray-500 hover:bg-gray-500 text-white w-full sm:w-auto text-center">
-						ดาวน์โหลดสรุปจำนวนไซซ์เสื้อเป็น CSV
-					</a>
-				</div>
+        function nextPage() {
+            if (currentPage < totalPages) {
+                currentPage++;
+                updatePageData();
+            }
+        }
 
-				<div class="overflow-x-auto">
-					<table class="table table-zebra w-full text-sm sm:text-base">
-						<thead>
-							<tr>
-								<th>ไซซ์</th>
-								<th>จำนวน</th>
-							</tr>
-						</thead>
-						<tbody>
-							<% sizeSummary.forEach(size => { %>
-								<tr>
-									<td><%= size.size %></td>
-									<td><%= size.count %></td>
-								</tr>
-							<% }) %>
-						</tbody>
-					</table>
-				</div>
-			</div>
-		</div>
+        function updatePageData() {
+            const majorDepartmentId = document.getElementById('majorDepartment').value;
+            const subDepartmentId = document.getElementById('subDepartment').value;
+            const showAllUsers = document.getElementById('showAllUsers').checked;
+            const searchName = document.getElementById('searchName').value;
 
-		<script>
-			// เมื่อผู้ใช้เลือกหน่วยงานใหญ่ใหม่ ให้ดึงข้อมูลหน่วยงานย่อยโดยอัตโนมัติ
-			document.getElementById('majorDepartment').addEventListener('change', function () {
-				const majorDepartmentId = this.value;
-				const subDepartmentDropdown = document.getElementById('subDepartment');
+            window.location.href = `/admin?major_department=${majorDepartmentId}&sub_department=${subDepartmentId}&showAllUsers=${showAllUsers}&search=${encodeURIComponent(searchName)}&page=${currentPage}`;
+        }
 
-				if (majorDepartmentId === 'all') {
-					subDepartmentDropdown.disabled = true;
-					subDepartmentDropdown.value = 'all';
-				} else {
-					subDepartmentDropdown.disabled = false;
-				}
+        document.getElementById('majorDepartment').addEventListener('change', function () {
+            currentPage = 1;
+            updatePageData();
+        });
 
-				// เปลี่ยน URL เพื่อให้แสดงข้อมูลตามหน่วยงานใหญ่ที่เลือก
-				window.location.href = `/admin?major_department=${majorDepartmentId}&sub_department=${
-					subDepartmentDropdown.value
-				}`;
-			});
+        document.getElementById('subDepartment').addEventListener('change', function () {
+            currentPage = 1;
+            updatePageData();
+        });
 
-			// เมื่อผู้ใช้เลือกหน่วยงานย่อยใหม่ ให้ดึงข้อมูลโดยอัตโนมัติ
-			document.getElementById('subDepartment').addEventListener('change', function () {
-				const majorDepartmentId = document.getElementById('majorDepartment').value;
-				const subDepartmentId = this.value;
-				window.location.href = `/admin?major_department=${majorDepartmentId}&sub_department=${subDepartmentId}`;
-			});
+        document.getElementById('showAllUsers').addEventListener('change', function () {
+            currentPage = 1;
+            updatePageData();
+        });
 
-			document.getElementById('showAllUsers').addEventListener('change', function () {
-				const majorDepartmentId = document.getElementById('majorDepartment').value;
-				const subDepartmentId = document.getElementById('subDepartment').value;
-				const showAllUsers = this.checked;
-				window.location.href = `/admin?major_department=${majorDepartmentId}&sub_department=${subDepartmentId}&showAllUsers=${showAllUsers}`;
-			});
+        document.getElementById('searchButton').addEventListener('click', function () {
+            currentPage = 1;
+            updatePageData();
+        });
+    </script>
 
-			document.getElementById('searchButton').addEventListener('click', function () {
-				const majorDepartmentId = document.getElementById('majorDepartment').value;
-				const subDepartmentId = document.getElementById('subDepartment').value;
-				const showAllUsers = document.getElementById('showAllUsers').checked;
-				const searchName = document.getElementById('searchName').value;
-
-				window.location.href = `/admin?major_department=${majorDepartmentId}&sub_department=${subDepartmentId}&showAllUsers=${showAllUsers}&search=${
-					encodeURIComponent(searchName)
-				}`;
-			});
-		</script>
-
-
-		<%- include('partials/footer') %>
-	</body>
+    <%- include('partials/footer') %>
+</body>
 </html>
